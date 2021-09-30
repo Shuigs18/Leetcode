@@ -263,18 +263,151 @@ title: Leetcode 刷题总结
 
 + 华为面试题
 
-  餐厅支持预订服务，每一位顾客都需要预订就餐时间[start, end) 注意此处为半开区间，顾客于哥哭之间的预订存在时间交叠，如果有K个顾客存在交叠，那么就认为存在K个同时预订，请求解第一个用餐高峰期的持续时间段[start,stop)，即K 第一次达到最大时的持续时间段。
+  餐厅支持预订服务，每一位顾客都需要预订就餐时间[start, end) 注意此处为半开区间，顾客于顾客之间的预订存在时间交叠，如果有K个顾客存在交叠，那么就认为存在K个同时预订，请求解第一个用餐高峰期的持续时间段[start,stop)，即K 第一次达到最大时的持续时间段。
 
   即首先K达到最大，达到最大后，如果有多个区间求解第一个。
 
+  ```c++
+  class Solution {
+  public:
+    vector<int> CustomerReserve(int &nums, vector<int> &times) {
+      int nums;
+      cin >> nums;
+      vector<vector<int>> ReserveTime(nums);
+      for (int i = 0; i < nums; ++i) {
+        cin >> ReserveTime[i][0] >> ReserveTime[i][1];
+      }
+      int max_k = 1;
+      vector<int> ans;
+      
+    }
+  }
   ```
+
++ **122 买卖股票的最佳时机 II**
+
   ```
+  输入: prices = [7,1,5,3,6,4]
+  输出: 7
+  解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。
+       随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。
+  ```
+
+  只要把爬坡的都统计到就行了
+
+  ```c++
+  class Solution {
+  public:
+    int maxProfit(vector<int> &prices) {
+      if (prices.size() <= 1) return 0;
+      int ans = 0;
+      for (int i = 0; i < prices.size() - 1; ++i) {
+        if(prices[i + 1] >= prices[i]) {
+          ans += prices[i + 1] - prices[i];
+        }
+      }
+      return ans
+    }
+  }
+  ```
+
++ **406 根据身高重建队列**
+
+  假设有打乱顺序的一群人站成一个队列，数组 people 表示队列中一些人的属性（不一定按顺序）。每个 people[i] = [hi, ki] 表示第 i 个人的身高为 hi ，前面 正好 有 ki 个身高大于或等于 hi 的人。
+
+  请你重新构造并返回输入数组 people 所表示的队列。返回的队列应该格式化为数组 queue ，其中 queue[j] = [hj, kj] 是队列中第 j 个人的属性（queue[0] 是排在队列前面的人）。
+
+  ```
+  输入：people = [[7,0],[4,4],[7,1],[5,0],[6,1],[5,2]]
+  输出：[[5,0],[7,0],[5,2],[6,1],[4,4],[7,1]]
+  解释：
+  编号为 0 的人身高为 5 ，没有身高更高或者相同的人排在他前面。
+  编号为 1 的人身高为 7 ，没有身高更高或者相同的人排在他前面。
+  编号为 2 的人身高为 5 ，有 2 个身高更高或者相同的人排在他前面，即编号为 0 和 1 的人。
+  编号为 3 的人身高为 6 ，有 1 个身高更高或者相同的人排在他前面，即编号为 1 的人。
+  编号为 4 的人身高为 4 ，有 4 个身高更高或者相同的人排在他前面，即编号为 0、1、2、3 的人。
+  编号为 5 的人身高为 7 ，有 1 个身高更高或者相同的人排在他前面，即编号为 1 的人。
+  因此 [[5,0],[7,0],[5,2],[6,1],[4,4],[7,1]] 是重新构造后的队列。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+    vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+      // 先排序
+      sort(people.begin(), people.end(), [](vector<int> &u, vector<int> &v) {
+        return u[0] > v[0] || (u[0] == v[0] && u[1] < v[1]);
+      });
+      // 插入
+      vector<vector<int>> ans;
+      for (const vector<int> person: people){
+        ans.insert(ans.begin() + person[1], person);
+      }
+      return ans;
+    }
+  }
+  
+  执行用时：152 ms, 在所有 C++ 提交中击败了40.60%的用户
+  内存消耗：12.2 MB, 在所有 C++ 提交中击败了49.54%的用户
+  ```
+
++ **605 非递减数列 难度中等**
+
+  给你一个长度为 n 的整数数组，请你判断在 最多 改变 1 个元素的情况下，该数组能否变成一个非递减数列。
+
+  我们是这样定义一个非递减数列的： 对于数组中任意的 i (0 <= i <= n-2)，总满足 nums[i] <= nums[i + 1]。
+
+  ```
+  输入: nums = [4,2,3]
+  输出: true
+  解释: 你可以通过把第一个4变成1来使得它成为一个非递减数列。
+  ```
+
+  分析题目，要使数组变成一个非递减数列，nums[i] > nums[i + 1] 最多只出现一个。但是满足这个条件还不够，例如[3, 4, 1, 2]，还必须保证修改后的数组是非递减数列，这里贪心算法的思想在于，我们可以将nums[i] 修改为小于等于nums[i + 1] ， 但是为了不使得i之前的数变成不是非递减的，nums[i] 应该尽可能的大。所以nums[i] 最优应该修改为和nums[i + 1] 一样，同理还要尝试修改一下nums[i + 1]，修改完之后要看看是否变成了非递减数列。
+
+  ```c++
+  class Solution {
+  public:
+    bool checkPossibility(vector<int> &nums) {
+      int n = nums.size();
+      if (n <= 2) return true;
+      for (int i = 0; i < n - 1; ++i) {
+        int x = nums[i], y = nums[i + 1];
+        if (x > y) {
+          nums[i] = y;
+          if (is_sorted(nums.begin(), nums.end())) return true;
+          nums[i] = x;
+          nums[i + 1] = x;
+          return is_sorted(nums.begin(), nums.end());
+        }
+      }
+      return true;
+    }
+  }
+  
+  //只遍历一次数组
+  class Solution {
+  public:
+    bool checkPossibility(vector<int> &nums) {
+      int n = nums.size(), cnt = 0;
+      for (int i = 0; i < n - 1; ++i) {
+        int x = nums[i], y = nums[i + 1];
+        if (x > y) {
+          ++cnt;
+          if (cnt > 1) return false;
+          if (i > 0 && y < nums[i - 1]) {
+            nums[i + 1] = x;
+          }
+        }
+      }
+      return true
+    }
+  }
+  ```
+
+    
 
   
-
-
-
-
 
 
 
