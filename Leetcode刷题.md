@@ -267,7 +267,40 @@ title: Leetcode 刷题总结
 
   即首先K达到最大，达到最大后，如果有多个区间求解第一个。
 
+  ```
+  Input: nums = 6, times = [[10,15],[55,60],[10,40],[5,15],[5,10],[25, 55]]
+  Output: [10, 15]
+  ```
+
+  
+
   ```c++
+  class Solution {
+  public:
+    vector<int> CustomerReserve(int &nums, vector<vector<int>> &times) {
+      sort(times.begin(), times.end(), [](vector<int> &u, vector<int> &v) {
+        return u[0] < v[0] || u[0] == v[0] && u[1] < v[1];
+      });
+      int k = 1, k_start = times[0][0], k_stop = times[0][1]
+      int cnt_lap = 1; l_lap = k_start, r_lap = k_stop;
+      for (int i = 0; i < nums - 1; ++i) {
+        if (times[i + 1][0] < r_lap) {
+          ++cnt_lap;
+          l_lap = times[i + 1][0];
+          r_lap = min(times[i + 1][1], r_lap);
+          if (cnt_lap > k) {
+            k = cnt_lap;
+            k_start = l_lap;
+            k_stop = r_lap;
+          }
+        }
+        cnt_lap = 1;
+        l_lap = 
+      }
+    }
+      
+  }
+  
   class Solution {
   public:
     vector<int> CustomerReserve(int &nums, vector<int> &times) {
@@ -279,7 +312,7 @@ title: Leetcode 刷题总结
       }
       int max_k = 1;
       vector<int> ans;
-      
+   
     }
   }
   ```
@@ -405,9 +438,194 @@ title: Leetcode 刷题总结
   }
   ```
 
-    
+# 2. 双指针
 
+指针与常量
+
+```
+int x;
+int *p1 = &x; // 指针可以被修改，值也可以被修改
+const int *p2 = &x; // 指针可以被修改，但是值不可以被修改
+int * const p3 = &x; // 指针不可以被修改，但是值可以被修改
+const int * const p4 = &x; // 指针不可以被修改，值也不可以被修改
+```
+
+指针函数与函数指针
+
+```c++
+// addition是指针函数，一个返回类型是指针的函数
+int* addition(int a, int b) {
+  int* sum = new int(a + b);
+  return sum;
+}
+```
+
+## 2.1 Two Sum
+
++ **167 两数之和 II - 输入有序数组**
+
+给定一个已按照 非递减顺序排列  的整数数组 numbers ，请你从数组中找出两个数满足相加之和等于目标数 target 。
+
+函数应该以长度为 2 的整数数组的形式返回这两个数的下标值。numbers 的下标 从 1 开始计数 ，所以答案数组应当满足 1 <= answer[0] < answer[1] <= numbers.length 。
+
+你可以假设每个输入 只对应唯一的答案 ，而且你 不可以 重复使用相同的元素。
+
+```c
+输入：numbers = [2,7,11,15], target = 9
+输出：[1,2]
+解释：2 与 7 之和等于目标数 9 。因此 index1 = 1, index2 = 2 。
+```
+
+```c++
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target){
+    	int left = 0, right = numbers.size() - 1, sum;
+      while(left < right) {
+        sum = numbers[left] + numbers[right];
+        if (sum == target) break;
+        if (sum < target) ++left;
+        else --right;
+      }
+      return vector<int>{left + 1, right + 1};
+    } 
+}
+```
+
+## 2.2 归并两个有序数组
+
++ **88 合并两个有序数组**
+
+  输入是两个数组和它们分别的长度 m 和 n。其中第一个数组的长度被延长至 m + n，多出的n 位被 0 填补。题目要求把第二个数组归并到第一个数组上，不需要开辟额外空间。
+
+  ```
+  输入：nums1 = [0], m = 0, nums2 = [1], n = 1
+  输出：[1]
+  解释：需要合并的数组是 [] 和 [1] 。
+  合并结果是 [1] 。
+  注意，因为 m = 0 ，所以 nums1 中没有元素。nums1 中仅存的 0 仅仅是为了确保合并结果可以顺利存放到 nums1 中。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        int pos = m-- + n-- - 1;
+        while(m >= 0 && n >= 0) {
+  				nums1[pos--] = nums1[m] >= nums2[n] ? nums1[m--]: nums2[n--];
+        }
+        while (n >= 0) {
+          nums1[pos--] = nums2[n--];
+        }
+      }
+  }
+  ```
+
+## 3.3 快慢指针
+
++ **142 环形链表2**
+
+  给定一个链表，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+
+  为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。注意，pos 仅仅是用于标识环的情况，并不会作为参数传递到函数中。
+
+  说明：不允许修改给定的链表。
+
+  进阶：你是否可以使用 O(1) 空间解决此题？
+
+  ```
+  输入：head = [3,2,0,-4], pos = 1
+  输出：返回索引为 1 的链表节点
+  解释：链表中有一个环，其尾部连接到第二个节点。
+  ```
+
+  ```c++
+  /**
+   * Definition for singly-linked list.
+   * struct ListNode {
+   *     int val;
+   *     ListNode *next;
+   *     ListNode(int x) : val(x), next(NULL) {}
+   * };
+   */
+  class Solution {
+  public:
+      ListNode *detectCycle(ListNode *head) {
+        ListNode *fast = head, *slow = head;
+        do {
+          if (!fast || !fast->next) return nullptr;
+          fast = fast->next->next;
+          slow = slow->next;
+        } while(fast != slow);
+        
+        fast = head;
+        while (fast != slow){
+          fast = fast->next;
+          slow = slow->next;
+        }
+        return fast;
+      }
+  };
+  ```
+
+## 3.4 滑动窗口
+
++ **76 最小覆盖字串**
+
+  给定两个字符串 S 和 T，求 S 中包含 T 所有字符的最短连续子字符串的长度，同时要求时间复杂度不得超过 O(n)。
   
+  ```
+  输入：s = "ADOBECODEBANC", t = "ABC"
+  输出："BANC"
+  ```
+  
+  ```c++
+  class Solution {
+  public:
+    string minWindow(string s, string t) {
+      vector<int> chars(128, 0);
+      vector<int> flag(128, false);
+      for (int i = 0; i < t.size(); ++i) {
+        flag[t[i]] = true;
+        ++chars[t[i]];
+      }
+      int cnt = 0, l = 0, min_l = 0, min_size = s.size() + 1;
+      for (int r = 0; r < s.size(); ++r) {
+        if (flag[s[r]]) {
+          if (--chars[s[r]] >= 0) {
+            ++cnt;
+          }
+          //左移指针
+          while (cnt == t.size()) {
+            if (r - l + 1 < min_size) {
+              min_l = l;
+              min_size = r - l + 1;
+            }
+            if (flag[s[l]] && ++chars[s[l]] > 0) {
+              --cnt;
+            }
+            ++l;
+          }
+        }
+      }
+      return min_size <= s.size()? s.substr(min_l, min_size): "";
+    }
+  }
+  ```
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
