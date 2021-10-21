@@ -612,12 +612,557 @@ public:
     }
   }
   ```
+
++ **平方数之和**
+
+  给定一个非负整数 `c` ，你要判断是否存在两个整数 `a` 和 `b`，使得 `a2 + b2 = c`
+
+  ```
+  输入：c = 5
+  输出：true
+  解释：1 * 1 + 2 * 2 = 5
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool judgeSquareSum(int c) {
+        int left = 0;
+        int right = (int) (sqrt(c));
+        while (left <= right) {
+          sum = left * left + right * right;
+          if (sum == c) return true;
+          if (sum < c) ++left;
+          else --right;
+        }
+        return false;
+      }
+  }
+  ```
+
++ **验证回文字符串II**
+
+  给定一个非空字符串 `s`，**最多**删除一个字符。判断是否能成为回文字符串。
+
+  ```
+  输入: s = "aba"
+  输出: true
   
+  输入: s = "abca"
+  输出: true
+  解释: 你可以删除c字符。
   
+  输入: s = "abc"
+  输出: false
+  ```
 
+  ```c++
+  class Solution {
+  public:
+  		bool checkPalindrome(string s, int low, int high) {
+        	while (low < high) {
+            	if (s[low] == s[high]) {
+                	++low;
+                	--high;
+              } else return false;
+          }
+        	return true;
+      }
+    
+      bool validPalindrome(string s) {
+  				int low = 0; high = s.size() - 1;
+        	while (low < high) {
+            	if (s[low] == s[high]) {
+                --high;
+                ++low;
+              } else {
+                	return checkPalindrome(s, low, high - 1) || checkPalindrome(s, low + 1, high);
+              }
+          }
+        	return true;
+      }
+  };
+  ```
 
++ **524 通过删除字母匹配到字典里最长单词**
 
+  给你一个字符串 s 和一个字符串数组 dictionary ，找出并返回 dictionary 中最长的字符串，该字符串可以通过删除 s 中的某些字符得到。
 
+  如果答案不止一个，返回长度最长且字母序最小的字符串。如果答案不存在，则返回空字符串。
+
+  ```
+  输入：s = "abpcplea", dictionary = ["ale","apple","monkey","plea"]
+  输出："apple"
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      string findLongestWord(string s, vector<string>& dictionary) {
+          sort(dictionary.begin(), dictionary.end(), [](const string u, const string v) {
+              return u.length() > v.length() || (u.length() == v.length() && u < v);
+          });
+          int n = s.length();
+          for (auto & ss: dictionary) {
+              int m = ss.length();
+              if (m > n) continue;
+              for (int i = 0, j = 0; i < n && j < m; ++i) {
+                  if (s[i] == ss[j]) ++j;
+                  if (j == m) return ss;
+              }
+          }
+          return "";
+      }
+  };
+  ```
+
+  ```c++
+  // dp 序列自动机
+  /*
+  [&]：隐式捕获列表，采用引用捕获方式。lambda体中所使用的来自所在函数的实体都采用引用方式使用。
+  [=]：隐式捕获列表，采用值捕获方式。lambda体将拷贝所使用的来自所在函数的实体的值。
+  [&, identifier_list]：identifier_list是一个逗号分隔的列表，包含0个或者多个来自所在函数的变量。这些变量采用值捕获方式，而任何隐式捕获的变量都采用引用方式捕获。identifier_list中的名字前面个不能使用&。
+  [=, identifier_list]：identifier_list中的变量都采用引用方式捕获，而任何隐式捕获的变量都采用值方式捕获。identifier_list中名字不能包括this，且这些名字之前必须使用&。  
+  */
+  class Solution {
+  public:
+      string findLongestWord(string s, vector<string>& dic) {
+          sort(dic.rbegin(), dic.rend(), [](auto&& a, auto&& b){return a.size() < b.size() || a.size() == b.size() && a > b;});
+          dic.push_back("");
+          vector<vector<int>> next(s.size() + 1, vector(26, -1));
+          for(int i = s.size() - 1; i >= 0; --i)
+              for(int j = 0; j < 26; ++j)
+                  next[i][j] = s[i] == (j+'a') ? i : next[i+1][j];
+  
+        auto check = [&](string& x){
+              int m = x.size(), l = 0, r = 0;
+              while(r < m) if(!(l = next[l][x[r++]-'a'] + 1)) return false;
+              return r == m;
+          };
+          return *find_if(begin(dic), end(dic), check);
+      }
+  };
+  ```
+
++ 340 
+
+# 4. 二分查找
+
+## 4.1 算法技巧
+
+二分查找时区间的左右端取开区间还是闭区间在绝大多数时候都可以，因此有些初学者会容易搞不清楚如何定义区间开闭性。这里我提供两个小诀窍，第一是尝试熟练使用一种写法，比如左闭右开（满足 C++、 Python 等语言的习惯）或左闭右闭（便于处理边界条件），尽量只保持这一种写法；第二是在刷题时思考如果最后区间只剩下一个数或者两个数，自己的写
+法是否会陷入死循环，如果某种写法无法跳出死循环，则考虑尝试另一种写法。
+
+二分查找也可以看作双指针的一种特殊情况，但我们一般会将二者区分。双指针类型的题，
+指针通常是一步一步移动的，而在二分查找里，指针每次移动半个区间长度。
+
+​    
+
+## 4.2 求开方
+
++ **69 Sqrt(x)**
+
+  给你一个非负整数 x ，计算并返回 x 的 算术平方根 。
+
+  由于返回类型是整数，结果只保留 整数部分 ，小数部分将被 舍去 。
+
+  注意：不允许使用任何内置指数函数和算符，例如 pow(x, 0.5) 或者 x ** 0.5
+
+  ```
+  输入：x = 8
+  输出：2
+  解释：8 的算术平方根是 2.82842..., 由于返回类型是整数，小数部分将被舍去。
+  ```
+
+  ```c++
+  // 左闭右毕
+  class Solution {
+  public:
+      int mySqrt(int x) {
+          if (x == 0) return 0;
+          int l = 1, r = x, mid, sqrt;
+          while (l <= r) {
+              mid = l + (r - l) / 2;
+              sqrt = x / mid;
+              if (sqrt == mid) return sqrt;
+              else if (sqrt < mid) {
+                  r = mid - 1;
+              } else {
+                  l = mid + 1;
+              }
+          }
+          return r;
+      }
+  };
+  
+  // 牛顿迭代法
+  class Solution {
+  public:
+      int mySqrt(int x) {
+          int m = x;
+          while (m * m > x) {
+              m = (m + x / m) / 2;
+          }
+          return m;
+      }
+  }
+  ```
+
+## 4.3 查找区间
+
++ **34 在排序数组中查找元素的第一个和最后一个位置**
+
+  给定一个按照升序排列的整数数组 nums，和一个目标值 target。找出给定目标值在数组中的开始位置和结束位置。
+
+  如果数组中不存在目标值 target，返回 [-1, -1]。
+
+  ```
+  输入：nums = [5,7,7,8,8,10], target = 8
+  输出：[3,4]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<int> searchRange(vector<int>& nums, int target) {
+  		if (nums.empty()) return vector<int>{-1, -1};
+          int lower = lower_bound(nums, target);
+          int upper = upper_bound(nums, target) - 1;
+          if (lower == nums.size() || nums[lower] != target) {
+              return vector<int>{-1, -1};
+          }
+          return vector<int>{lower, upper};
+      }
+      // 辅助函数 lower_bound
+      int lower_bound(vector<int>& nums, int target) {
+          int l = 0, r = nums.size(), mid,
+          while (l < r) {
+              mid = (l + r) / 2;
+              if (nums[mid] >= target) {
+                  r = mid;
+              } else {
+                  l = mid + 1;
+              }
+          }
+          return l;
+      }
+      
+      // 辅助函数 upper_bound
+      int upper_bound(vector<int>& nums, int target) {
+          int l = 0, r = nums.size(), mid,
+          while (l < r) {
+              mid = (l + r) / 2;
+              if (nums[mid] > target) {
+                  r = mid;
+              } else {
+                  l = mid + 1;
+              }
+          }
+          return l;
+      }
+  };
+  ```
+
+## 4.4 旋转数组查找数字
+
++ **81搜索旋转排序数组 II**
+
+  已知存在一个按非降序排列的整数数组 nums ，数组中的值不必互不相同。
+
+  在传递给函数之前，nums 在预先未知的某个下标 k（0 <= k < nums.length）上进行了 旋转 ，使数组变为 [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]（下标 从 0 开始 计数）。例如， [0,1,2,4,4,4,5,6,6,7] 在下标 5 处经旋转后可能变为 [4,5,6,6,7,0,1,2,4,4] 。
+
+  给你 旋转后 的数组 nums 和一个整数 target ，请你编写一个函数来判断给定的目标值是否存在于数组中。如果 nums 中存在这个目标值 target ，则返回 true ，否则返回 false。
+  
+  ```c++
+  [1,0,1,1,1]
+  0
+  
+  class Solution {
+  public:
+      bool search(vector<int>& nums, int target) {
+      	int l = 0, r = nums.size() - 1, mid;
+          while (l <= r) {
+              /*
+              l < r 会使 [1,0,1,1,1] 0 这个实例不通过
+              */
+              mid = (l + r) / 2;
+              if (nums[mid] == target) return true;
+              // 无法判断左边是增序还是右边是增序
+              if (nums[mid] == nums[l]) {
+                  ++l;
+              // 右区间是增序
+              } else if (nums[mid] <= nums[r]) {
+                  if (target > nums[mid] && target <= nums[r]) {
+                      l = mid + 1;
+                  } else{
+                      r = mid - 1;
+                  }
+              } else {
+                  if (target < nums[mid] && target >= nums[l]) {
+                      r = mid - 1;
+                  } else {
+                      l = mid + 1
+                  }
+              }
+          }
+          return false;
+      }
+  };
+  ```
+
+## 4.5 练习
+
++ **154 [寻找旋转排序数组中的最小值 II](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array-ii/)**
+
+  已知一个长度为 n 的数组，预先按照升序排列，经由 1 到 n 次 旋转 后，得到输入数组。例如，原数组 nums = [0,1,4,4,5,6,7] 在变化后可能得到：
+  若旋转 4 次，则可以得到 [4,5,6,7,0,1,4]
+  若旋转 7 次，则可以得到 [0,1,4,4,5,6,7]
+  注意，数组 [a[0], a[1], a[2], ..., a[n-1]] 旋转一次 的结果为数组 [a[n-1], a[0], a[1], a[2], ..., a[n-2]] 。
+
+  给你一个可能存在 重复 元素值的数组 nums ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 最小元素 。
+
+  ```
+  输入：nums = [1,3,5]
+  输出：1
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int findMin(vector<int>& nums) {
+          
+          int l = 0, r = nums.size() - 1, mid;
+          
+          while (l < r) {
+              mid = (l + r) / 2;
+              if (nums[l] < nums[r]) {
+                  return nums[l];
+              } else if (nums[l] == nums[mid]) {
+                  ++l;
+              } else if (nums[mid] > nums[l]) {
+                  l = mid + 1;
+              } else {
+                  r = mid;
+              }
+          }
+          return nums[l];
+      }
+  };
+  ```
+
++ **540 [有序数组中的单一元素](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)**
+
+  给定一个只包含整数的有序数组，每个元素都会出现两次，唯有一个数只会出现一次，找出这个数。
+
+  ```
+  输入: nums = [1,1,2,3,3,4,4,8,8]
+  输出: 2
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int singleNonDuplicate(vector<int>& nums) {
+  		int l = 0, r = nums.size(), mid;
+          
+          while (l < r) {
+              mid = (l + r) / 2;
+              if (nums[mid + 1] != nums[mid] &&
+                  nums[mid] ! = nums[mid - 1]) return nums[mid];
+              if (nums[mid] == nums[mid + 1]) {
+                  if ((mid - l) % 2 == 1) {
+                      r = mid - 1
+                  } else {
+                      l = mid + 2;
+                  }
+              }
+              if (nums[mid - 1] = nums[mid]) {
+                  if ((r - mid) % 2 == 1) {
+                      l = mid + 1;
+                  } else {
+                      r = mid - 2;
+                  }
+              }
+          }
+          return nums[l];
+      }
+  };
+  //执行用时：4 ms, 在所有 C++ 提交中击败了 95.78% 的用户 
+  //内存消耗：10.8 MB, 在所有 C++ 提交中击败了17.08%的用户
+  
+  class Solution {
+  public:
+      int singleNonDuplicate(vector<int>& nums) {
+          int l = 0, r = nums.size() - 1, mid;
+          
+          while (l < r) {
+              mid = (l + r) / 2;
+              if (nums[mid] == nums[mid + 1]) {
+                  if ((mid - l) % 2 == 1) {
+                      r = mid - 1;
+                  } else {
+                      l = mid + 2;
+                  }
+              } else if (nums[mid - 1] == nums[mid]) {
+                  if ((r - mid) % 2 == 1) {
+                      l = mid + 1;
+                  } else {
+                      r = mid - 2;
+                  }
+              } else {
+                  return nums[mid];
+              }
+          }
+          return nums[l];
+      }
+  };
+  //内存消耗：10.8 MB, 在所有 C++ 提交中击败了35.82%的用户
+  
+  class Solution {
+  public:
+      int singleNonDuplicate(vector<int>& nums) {
+          int lo = 0, hi = nums.size() - 1, mid;
+  
+          while (lo < hi) {
+              mid = (hi + lo) / 2;
+              if (mid % 2 == 1) mid--;
+              if (nums[mid] == nums[mid + 1]) {
+                  lo = mid + 2;
+              } else {
+                  hi = mid;
+              }
+          }
+          return nums[lo];
+      }
+  };
+  
+  //执行用时：8 ms, 在所有 C++ 提交中击败了68.74%的用户
+  //内存消耗：10.7 MB, 在所有 C++ 提交中击败了90.80%的用户
+  ```
+
++ **4.[寻找两个正序数组的中位数](https://leetcode-cn.com/problems/median-of-two-sorted-arrays/)**
+
+  给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 
+
+  需要对两个数组同时进行二分搜索
+
+  ```
+  输入：nums1 = [1,3], nums2 = [2]
+  输出：2.00000
+  解释：合并数组 = [1,2,3] ，中位数 2
+  
+  输入：nums1 = [1,2], nums2 = [3,4]
+  输出：2.50000
+  解释：合并数组 = [1,2,3,4] ，中位数 (2 + 3) / 2 = 2.5
+  ```
+
+  下面这个解法的巧妙点在于将原本求中位数转换为了求两个数组中的第K个最小值
+
+  这里可以总结数组nums的中位数下标求法
+
+  ```
+  当有奇个数时，中位数为正中间的数
+  left = int((nums.size() + 1) / 2) 
+  right = = int((nums.size() + 2) / 2)
+  此时 left = right
+  当数组有偶数个数时，中位数为中间两个的平均值
+  left = int((nums.size() + 1) / 2) 
+  right = = int((nums.size() + 2) / 2)
+  此时 left + 1 = right
+  这里的left和right是数组的第几个数 如果转换成下标应该再减去一
+  即中位数为 (nums[left] + nums[right]) / 2
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      
+      double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+  		int n = nums1.size();
+          int m = nums2.size();
+          int left = (n + m + 1) / 2;
+          int right = (n + m + 2) / 2;
+          return (getKth(nums1, 0, n - 1, nums2, 0, m - 1, left) + getKth(nums2, 0, m - 1, right));
+      }
+      
+      int getKth(vector<int>& nums1, int start1, int end1, 
+                 vector<int>& nums2, int start2, int end2, 
+                 int k) {
+          len1 = end1 - start1 + 1;
+          len2 = end2 - start2 + 1;
+          if (len1 > len2) return getKth(nums2, start2, end2, nums1, start1, end1, k);
+          if (len1 == 0) return nums2[start2 + k - 1];
+          if (k == 1) return min(nums1[start1], nums2[start2]);
+          
+          int i = start1 + min(len1, k / 2) - 1;
+          int j = start2 + min(len2, k / 2) - 1;
+          if (nums1[i] < nums2[j]) {
+              return getKth(nums1, i + 1, end1, nums2, start2, end2, k - (i - start + 1));
+          } else {
+              return getKth(nums1, start1, end1, nums2, j + 1, end2, k - (j - start + 1));
+          }
+      }
+  };
+  ```
+
+# 5. 排序算法
+
+常用的排序算法
+
++ 快速排序
+
+  我们采用左闭右闭的二分写法
+
+  ```c++
+  void quick_sort(vector<int> &nums, int l, int r) {
+      if (l + 1 >= r) return; // 说明只有一个元素不需要排序了
+      
+      int first = l, last = r - 1, key = nums[first];
+      while (first < last) {
+          if (first < last && nums[last] >= key) --last;
+          nums[first] = nums[last];
+          if (first < last && nums[first] <= key) ++first;
+          nums[last] = nums[first];
+      }
+      nums[first] = key;
+      quick_sort(nums, l, first);
+      quick_sort(nums, first + 1, r);
+  }
+  ```
+
+  ```c++
+  // 数据结构和语言算法
+  template <class T>
+  void quickShort(T a[], int n) {
+      if (n <= 1) return;
+      int max = indexOfMax(a, n);
+      swap(a[n - 1], a[max]);
+      quickShort(a, 0, n - 2);
+  }
+  
+  void quickShort(T a[], int leftEnd, int rightEnd) {
+      if (leftEnd >= rightEnd) return;
+      
+      int leftCursor = leftEnd,  rightCursor = rightEnd + 1;
+      int pivot = a[leftEnd];
+      while (true) {
+          do {
+              ++leftCursor;
+          } while (a[leftCursor] < pivot);
+          do {
+              --rightCursor;
+          } while (a[rightCursor] > pivot);
+          if (leftCursor >= rightCursor) break;
+          swap(a[leftCursor], a[rightCursor]);
+      }
+      a[leftEnd] = a[rightCursor];
+      a[rightCursor] = pivot;
+      quickShort(a, leftEnd, rightCursor - 1);
+      quickShort(a, rightCursor + 1, rightEnd);
+  }
+  ```
+
+  
 
 
 
