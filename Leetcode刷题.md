@@ -1109,7 +1109,7 @@ public:
 
 常用的排序算法
 
-+ 快速排序
++ **快速排序**
 
   我们采用左闭右闭的二分写法
 
@@ -1162,11 +1162,642 @@ public:
   }
   ```
 
++ **归并排序**
+
+  ```c++
+  void merge_sort(vector<int> &nums, int l, int r, vector<int> &temp) {
+      if (l + 1 > r) return;
+      
+      int mid = (l + r) / 2;
+      // 分开
+      merge_sort(nums, l, mid, tmp);
+      merge_sort(nums, mid, r, tmp);
+      // 归并
+      int p = l, q = m, i = l;
+      // 代码不错
+      while (p < m || q < r) {
+          if (q >= r || (p < m && nums[p] < nums[q])) {
+              tmp[i++] = nums[p++];
+          } else {
+              tmp[i++] = nums[q++];
+          }
+      }
+      // tmp 复制回num
+      for (i = l; i < r; i++) {
+          nums[i] = tmp[i];
+      }
+  }
+  ```
+
+  ```c++
+  // 数据结构与算法
+  template <class T>
+  void mergeSort(T *a, int n) {
+      T *b = new T[n];
+      int segmentSize = 1;
+      while (segementSize < n) {
+          mergePass(a, b, n, segmentSize);
+          segmentSize += segmentSize;
+          mergePass(b, a, n, segmentSize);
+          segmentSize += segmentSize; 
+      }
+      delete[] b;
+  }
   
+  void mergePass(T *x, T *y, int n, int segmentSize) {
+      int i = 0;
+      while (i <= n - 2 * segmentSize) {
+          merge(x, y, i, i + segmentSize - 1, i + 2 * segmentSize - 1);
+          i += 2 * segmentSize;
+      }
+      // 如果不够两个满的数据段
+      if (i + segmentSize < n) {
+          // 剩有两个数据段
+          merge(x, y, i, i + segmentSize - 1, n - 1);
+      } else {
+          // 剩下一个数据段 复制到y
+          for (int j = i; j < n; ++j) {
+              y[j] = x[j];
+          }
+      }
+  }
+  
+  // 均为闭区间
+  void merge(T c[], T d[], int startOfFirst, int endOfFirst, int endOfSecond) {
+      int first = startOfFirst, second = endOfFirst, result = startOfFirst;
+      while (first <= endOfFirst && second <= endofSecond) {
+          if (c[first] <= c[second]) {
+              d[result++] = c[first++];
+          } else {
+              d[result++] = c[second++];
+          }
+      }
+      // 如果有段没复制完
+      if (first > endOfFirst) {
+          for (int q = second; q <= endofSecond; q++) {
+              d[result++] = c[q];
+          }
+      } else {
+          for (int p = first; p <= endofFirst; p++) {
+              d[result++] = c[p];
+          }
+      }
+      /* 
+      while (first <= endOfFirst || second <= endOfSecond) {
+      	if (second > endOfSecond || (first <= endOfFirst && c[first] <= c[second])) {
+      		d[result++] = c[first++];
+      	} else {
+      		d[result++] = c[second++];
+      	}
+      }
+      */
+  }
+  
+  
+  // 还是第一个两数组合并写的好
+  
+  ```
+
++ **插入排序**
+
+  ```c++
+  void insertion_sort(vector<int> &nums, int n) {
+      for (int i = 0; i < n; ++i) {
+          // 从小到大排列
+          for (int j = i; j > 0 && nums[j] < nums[j - 1]; --j) {
+              swap(nums[j], nums[j - 1]);
+          }
+      }
+  }
+  ```
+
++ **冒泡排序  (Bubble Sort)**
+
+  ```c++
+  template<class T>
+  void bubble(T a[], int n) {
+      for (int i = 0; i < n - 2; i++) {
+          if (a[i] > a[i + 1]) swap(a[i], a[i + 2]);
+      }
+  }
+  
+  void bubbleSort(T a[], int n) {
+      for (int i = n; i > 0; i++) {
+          bubble(a, i);
+      }
+  }
+  ```
+
++ **选择排序（Selection Sort）**
+
+  ```c++
+  template<class T>
+  void selectionSort(T a[], int n) {
+      for (int i = 0; i < n; i++) {
+          mid = i;
+          for (int j = i + 1; j < n; j++) {
+              if (a[j] < a[mid]) mid = j;
+          }
+          swap(a[i], a[mid]);
+      }
+  }
+  ```
+
+## 5.2 快速选择
+
++ **215 [数组中的第K个最大元素](https://leetcode-cn.com/problems/kth-largest-element-in-an-array/)**
+
+  给定整数数组 nums 和整数 k，请返回数组中第 k 个最大的元素。
+
+  请注意，你需要找的是数组排序后的第 k 个最大的元素，而不是第 k 个不同的元素。
 
 
+```
+输入: [3,2,1,5,6,4] 和 k = 2
+输出: 5
+```
 
+```c++
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        int l = 0, r = nums.size() - 1, target = nums.size() - k;
+        while (l < r) {
+        	int mid = selectionSort(nums, l, r);
+            if (mid == target) {
+                return nums[mid];
+            }
+            if (mid < target) {
+                r = mid - 1;
+            } else {
+                l = mid + 1;
+            }
+        }
+        return nums[l];
+    }
+    
+    int selectionSort(vector<int>& nums, int left, int right) {
+        int first = l + 1, last = right;
+        while (true) {
+            while (first < r && nums[first] <= nums[l]) ++first;
+            while (l < last && nums[last] >= nums[l]) --last;
+            if (first >= last) break;
+            swap(nums[first], nums[last]);
+        }
+        swap(nums[l], nums[last]);
+        return last;
+    }
+};
 
+//执行用时：64 ms, 在所有 C++ 提交中击败了17.63%的用户
+//内存消耗：9.7 MB, 在所有 C++ 提交中击败了82.11%的用户
+```
+
+## 5.3 桶排序
+
++ **347 [前 K 个高频元素](https://leetcode-cn.com/problems/top-k-frequent-elements/)**
+
+  给你一个整数数组 `nums` 和一个整数 `k` ，请你返回其中出现频率前 `k` 高的元素。你可以按 **任意顺序** 返回答案。
+
+  ```
+  输入: nums = [1,1,1,2,2,3], k = 2
+  输出: [1,2]
+  
+  输入: nums = [1], k = 1
+  输出: [1]
+  
+  提示：
+   + 1 <= nums.length <= 105
+   + k 的取值范围是 [1, 数组中不相同的元素的个数]
+   + 题目数据保证答案唯一，换句话说，数组中前 k 个高频元素的集合是唯一的
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<int> topKFrequent(vector<int>& nums, int k) {
+          unordered_map<int, int> counts;
+          int max_count = 0;
+          // 确定桶的大小
+          for (const int &num: nums) {
+              max_count = max(max_count, ++counts[num]);
+          }
+          // 建立桶 为什么要加1
+          vector<vector<int>> buckets(max_count + 1);
+          for (const auto &p: counts) {
+              buckets[p.second].push_back(p.first);
+          }
+          //
+          vector<int> ans;
+          for (int i = max_count; i >= 0 && ans.size() < k; i--) {
+              for (const auto &num: buckets[i]) {
+                  ans.push_back(num);
+                  if (ans.size() == k) {
+                      break;
+                  }
+              }
+          }
+          return ans;
+      }
+  };
+  
+  执行用时：12 ms, 在所有 C++ 提交中击败了83.51%的用户
+  内存消耗：13.5 MB, 在所有 C++ 提交中击败了19.95%的用户
+  ```
+
+## 5.4 练习
+
++ **451 [根据字符出现频率排序](https://leetcode-cn.com/problems/sort-characters-by-frequency/)**
+
+  给定一个字符串，请将字符串里的字符按照出现的频率降序排列。
+
+  ```
+  输入:
+  "tree"
+  
+  输出:
+  "eert"
+  
+  解释:
+  'e'出现两次，'r'和't'都只出现一次。
+  因此'e'必须出现在'r'和't'之前。此外，"eetr"也是一个有效的答案。
+  
+  输入:
+  "cccaaa"
+  
+  输出:
+  "cccaaa"
+  
+  解释:
+  'c'和'a'都出现三次。此外，"aaaccc"也是有效的答案。
+  注意"cacaca"是不正确的，因为相同的字母必须放在一起。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      string frequencySort(string s) {
+          // 用unordered_map试试
+          map<char, int> counts;
+          // 确定桶的大小
+          int max_count = 0;
+          for (const char &ch: s) {
+              max_count = max(max_count, ++counts[ch]);
+          }
+          // 确定桶
+         	vector<vector<char>> buckets;
+          for (const auto &p: counts) {
+              buckets[p.second].push_back(p.first);
+          }
+          //
+          string res;
+          for (int i = max_count; i >= 0 && res.size() < s.size(); --i) {
+              for (const char &ch: buckets[i]) {
+                  for (int j = 0; j < i; j++) {
+                      res.push_back(ch);
+                  }
+                  if (res.size() == s.size()) break;
+              }
+          }
+          return res;
+      }
+  };
+  
+  //执行用时：12 ms, 在所有 C++ 提交中击败了54.50%的用户
+  //内存消耗：10.4 MB, 在所有 C++ 提交中击败了16.78%的用户
+  ```
+
++ **75 [颜色分类](https://leetcode-cn.com/problems/sort-colors/) （中等）** 
+
+  给定一个包含红色、白色和蓝色，一共 n 个元素的数组，**原地**对它们进行排序，使得相同颜色的元素相邻，并按照红色、白色、蓝色顺序排列。
+
+  此题中，我们使用整数 0、 1 和 2 分别表示红色、白色和蓝色。
+
+  ```
+  输入：nums = [2,0,2,1,1,0]
+  输出：[0,0,1,1,2,2]
+  
+  输入：nums = [2,0,1]
+  输出：[0,1,2]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      void sortColors(vector<int>& nums) {
+          sortValues(nums, 0);
+      }
+      
+      void sortValues(vector<int>& nums, int l) {
+          if (l == nums.size() - 1) return ;
+          int minValue = *min_element(nums.cbegin() + l, nums.cend());
+          int r = nums.size();
+          int first = l, last = r - 1;
+          while (true) {
+              while (first < r - 1 && nums[first] <= minValue) ++first;
+              while (last > l && nums[last] > minValue) --last;
+              if (first >= last) break;
+              swap(nums[first], nums[last]);
+          }
+          return sortValues(nums, first);
+      }
+  };
+  
+  // 自己写的太拉了
+  //执行用时：4 ms, 在所有 C++ 提交中击败了47.44%的用户
+  //内存消耗：8.1 MB, 在所有 C++ 提交中击败了49.00%的用户
+  
+  // 单指针
+  class Solution {
+  public:
+      void sortColors(vector<int>& nums) {
+      	int n = nums.size();
+          int ptr = 0;
+          for (int i = 0; i < n; i++) {
+              if (nums[i] == 0) {
+                  swap(nums[i], nums[ptr]);
+                  ++ptr;
+              }
+          }
+          for (int j = 0; j < n; j++) {
+              if (nums[j] == 1) {
+                  swap(nums[j], nums[ptr]);
+                  ++ptr;
+              }
+          }
+      }
+  };
+  // 时间换空间
+  //执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  //内存消耗：8.2 MB, 在所有 C++ 提交中击败了5.02%的用户
+  
+  // 双指针
+  class Solution {
+  public:
+      void sortColors(vector<int>& nums) {
+          int n = nums.size();
+          int p0 = 0, p1 = 0;
+          for (int i = 0; i < n; i++) {
+              if (nums[i] == 1) {
+                  swap(nums[i], nums[p1]);
+                  ++p1;
+              } else if (nums[i] == 0) {
+                  swap(nums[i], nums[0]);
+                  if (p0 < p1) {
+                      swap(nums[i], nums[p1]);
+                  }
+                  ++p0;
+                  ++p1;
+              }
+          }
+      }
+  };
+  
+  //执行用时：4 ms, 在所有 C++ 提交中击败了47.44%的用户
+  //内存消耗：8.1 MB, 在所有 C++ 提交中击败了22.14%的用户
+  ```
+
+# 6. 一切皆可搜索
+
+**深度优先搜索**和**广度优先搜索**是两种最常见的优先搜索方法，它们被广泛地运用在图和树等结构中进行搜索
+
++ **659 [岛屿的最大面积](https://leetcode-cn.com/problems/max-area-of-island/) (中等)**
+
+  给你一个大小为 m x n 的二进制矩阵 grid 。
+
+  岛屿 是由一些相邻的 1 (代表土地) 构成的组合，这里的「相邻」要求两个 1 必须在 水平或者竖直的四个方向上 相邻。你可以假设 grid 的四个边缘都被 0（代表水）包围着。
+
+  岛屿的面积是岛上值为 1 的单元格的数目。
+
+  计算并返回 grid 中最大的岛屿面积。如果没有岛屿，则返回面积为 0 。
+
+  <img src="/Users/shuiguangshan/Pictures/Typora imgs/maxarea1-grid.jpg" alt="img" style="zoom:50%;" />
+
+```
+输入：grid = [[0,0,1,0,0,0,0,1,0,0,0,0,0],[0,0,0,0,0,0,0,1,1,1,0,0,0],[0,1,1,0,1,0,0,0,0,0,0,0,0],[0,1,0,0,1,1,0,0,1,0,1,0,0],[0,1,0,0,1,1,0,0,1,1,1,0,0],[0,0,0,0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,1,1,1,0,0,0],[0,0,0,0,0,0,0,1,1,0,0,0,0]]
+输出：6
+解释：答案不应该是 11 ，因为岛屿只能包含水平或垂直这四个方向上的 1 。
+```
+
+```c++
+// 使用栈方法
+class Solution {
+public:
+    vector<int> direction{-1, 0, 1, 0, -1};
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int m = grid.size(), n = m ? grid[0].size(): 0;
+        int local_area, area = 0, x, y;
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j]) {
+                    grid[i][j] = 0;
+                    local_area = 1;
+                    stack<pair<int, int>> island;
+                    island.push({i, j});
+                    while(!island.empty()) {
+                        auto [r, c] = island.top();
+                        island.pop();
+                        for (int k = 0; k < 4; ++k) {
+                            x = direction[k], y = direction[k + 1];
+                            if (x >= 0 && x < m &&
+                                y >= 0 && y < n && grid[x][y] == 1) {
+                                grid[x][y] = 0;
+                                island.push({x, y});
+                                ++local_area;
+                            }
+                        }
+                    }
+                    area = max(area, local_area);
+                }
+            }
+        }
+        return area;
+    }
+};
+
+16 ms	26.1 MB
+```
+
+```c++
+class Solution {
+public:
+
+    vector<int> direction{-1, 0, 1, 0, -1};
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+    	if (grid.empty() || grid[0].empty()) return 0;
+        int max_area = 0;
+        for (int i = 0; i < grid.size(); ++i) {
+            for (int j = 0; j < grid[0].size(); ++j) {
+                if (grid[i][j]) {
+                    max_area = max(max_area, dfs(grid, i, j));
+                }
+            }
+        }
+        return max_area;
+    }
+    // 先搜索 然后在判断是不是越界了
+    int dfs(vector<vector<int>>& grid, int r, int c) {
+        if (grid[r][c] == 0) return 0;
+        grid[r][c] = 0;
+        int area = 1;
+        int x, y;
+        for (int k = 0; k < 4; ++k) {
+            x = r + direction[k], y = c + direction[k + 1];
+            if (x >= 0 && x < grid.size() && y >= 0 && y < grid[0].size()) {
+                area += dfs(grid, x, y);
+            }
+        }
+        return area;
+    }
+};
+```
+
+```c++
+class Solution {
+public:
+
+    vector<int> direction{-1, 0, 1, 0, -1};
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+    	if (grid.empty() || grid[0].empty()) return 0;
+        int max_area = 0;
+        for (int i = 0; i < grid.size(); ++i) {
+            for (int j = 0; j < grid[0].size(); ++j) {
+                if (grid[i][j]) {
+                    max_area = max(max_area, dfs(grid, i, j));
+                }
+            }
+        }
+        return max_area;
+    }
+    
+    int dfs(vector<vector<int>>& grid, int r, int c) {
+        if (r < 0 || r >= grid.size() ||
+            c < 0 || c >= grid[0].size() || grid[r][c] == 0) return 0;
+        grid[r][c] = 0;
+        return 1 + dfs(grid, r - 1, c) + dfs(grid, r, c + 1) +
+                   dfs(grid, r + 1, c) + dfs(grid, r, c - 1);
+    }
+};
+
+//执行用时：12 ms, 在所有 C++ 提交中击败了93.97%的用户
+//内存消耗：22.5 MB, 在所有 C++ 提交中击败了90.27%的用户
+```
+
++ **547 [省份数量](https://leetcode-cn.com/problems/number-of-provinces/) (中等)**
+
+  有 n 个城市，其中一些彼此相连，另一些没有相连。如果城市 a 与城市 b 直接相连，且城市 b 与城市 c 直接相连，那么城市 a 与城市 c 间接相连。
+
+  省份 是一组直接或间接相连的城市，组内不含其他没有相连的城市。
+
+  给你一个 n x n 的矩阵 isConnected ，其中 isConnected [i] [j] = 1 表示第 i 个城市和第 j 个城市直接相连，而 isConnected [i] [j] = 0 表示二者不直接相连。
+
+  返回矩阵中 省份 的数量。
+
+  ```
+  输入：isConnected = [[1,1,0],[1,1,0],[0,0,1]]
+  输出：2
+  ```
+
+  ```c++
+  // 深度优先算法
+  class Solution {
+  public:
+      int findCircleNum(vector<vector<int>>& isConnected) {
+          int n = isConnected.size(), count = 0;
+          vector<bool> visited(n, false);
+          for (int i = 0; i < n; ++i) {
+              if (!visited[i]) {
+                  dfs(isConnected, i, visited);
+                  ++count;
+              }
+          }
+          return count;
+      }
+      
+      void dfs(vector<vector<int>>& isConnected, int i, vector<bool> visited) {
+          visited[i] = true;
+          for (int k = 0; k < isConnected.size(); ++k) {
+              if (isConnected[i][k] == 1 && !visited[k]) {
+                  dfs(isConnected, k, visited);
+              }
+          }
+      }
+  };
+  ```
+
+  ```c++
+  // 并查集的应用
+  
+  class UnionFind {
+  public:
+      int find(int x) {
+          int root = x;
+          
+          while (father[root] != -1) {
+              root = father[root];
+          }
+          
+          while (father[x] != root) {
+              int original_father = father[x];
+              father[x] = root;
+              x = original_father;
+          }
+          return root;
+      }
+      
+      bool is_connected(int x, int y) {
+          if (find(x) == find(y)) {
+              return true;
+          }
+          return false;
+      }
+      
+      void merge(int x, int y) {
+          int root_x = find(x);
+          int root_y = find(y);
+          
+          if (root_x != root_y) {
+              father[root_x] = root_y;
+              --num_of_sets;
+          }
+      }
+      
+      void add(int x){
+          if (!father.count[x]) {
+              father[x] = -1;
+              ++num_of_sets;
+          }
+      }
+      
+      int get_num_of_sets() {
+          return num_of_sets;
+      }
+     
+  
+  private:
+      // 记录父节点
+      unordered_map<int, int> father;
+      // 记录集合的数量
+      int num_of_sets = 0;
+  }
+  class Solution {
+  public:
+      int findCircleNum(vector<vector<int>>& isConnected) {
+          UnionFind uf;
+          for (int i = 0; i < isConnected.size(); ++i) {
+              uf.add(i);
+              for (int j = 0; j < i; ++j) {
+                  if (isConnected[i][j]) {
+                      uf.merge(i, j);
+                  }
+              }
+          }
+          return uf.get_num_of_sets();
+      }
+  };
+  ```
+
+  
 
 
 
