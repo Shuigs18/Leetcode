@@ -1561,6 +1561,8 @@ public:
 
 **深度优先搜索**和**广度优先搜索**是两种最常见的优先搜索方法，它们被广泛地运用在图和树等结构中进行搜索
 
+## 6.1 深度优先搜索
+
 + **659 [岛屿的最大面积](https://leetcode-cn.com/problems/max-area-of-island/) (中等)**
 
   给你一个大小为 m x n 的二进制矩阵 grid 。
@@ -1797,15 +1799,162 @@ public:
   };
   ```
 
++ **417 [太平洋大西洋水流问题](https://leetcode-cn.com/problems/pacific-atlantic-water-flow/)  （中等）**
+
+  给定一个 m x n 的非负整数矩阵来表示一片大陆上各个单元格的高度。“太平洋”处于大陆的左边界和上边界，而“大西洋”处于大陆的右边界和下边界。
+
+  规定水流只能按照上、下、左、右四个方向流动，且只能从高到低或者在同等高度上流动。
+
+  请找出那些水流既可以流动到“太平洋”，又能流动到“大西洋”的陆地单元的坐标。
+
+  ```
+  给定下面的 5x5 矩阵:
   
+    太平洋 ~   ~   ~   ~   ~ 
+         ~  1   2   2   3  (5) *
+         ~  3   2   3  (4) (4) *
+         ~  2   4  (5)  3   1  *
+         ~ (6) (7)  1   4   5  *
+         ~ (5)  1   1   2   4  *
+            *   *   *   *   * 大西洋
+  
+  返回:
+  
+  [[0, 4], [1, 3], [1, 4], [2, 2], [3, 0], [3, 1], [4, 0]] (上图中带括号的单元).
+  ```
 
+  ```c++
+  class Solution {
+  public:
+      vector<int> direction{-1, 0, 1, 0, -1}; // 上 右 下 左
+      vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+          if (heights.empty() || heights[0].empty()) return{};
+          
+          int m = heights.size(), n = heights[0].size();
+          vector<vector<int>> ans;
+          vector<vector<bool>> can_reach_p(m, vector<bool>(n, false));
+          vector<vector<bool>> can_reach_a(m, vector<bool>(n, false));
+          
+          for (int i = 0; i < m; ++i) {
+              dfs(heights, can_reach_p, i, 0);
+              dfs(heights, can_reach_a, i, n - 1);
+          }
+          for (int i = 0; i < n; ++i) {
+              dfs(heights, can_reach_p, 0, i);
+              dfs(heights, can_reach_a, m - 1, i);
+          }
+          
+          for (int i = 0; i < m; ++i) {
+              for (int j = 0; j < n; ++j) {
+                  if (can_reach_p[i][j] && can_reach_a[i][j]) {
+                      ans.push_back(vector<int>{i, j});
+                  }
+              }
+          }
+          return ans;
+      }
+      void dfs(vector<vector<int>>& heights,  vector<vector<bool>>& can_reach, int r, int c) {
+          if (can_reach[r][c]) return;
+          can_reach[r][c] = true;
+          int x, y;
+          for (int k = 0; k < 4; ++k) {
+              x = r + direction[k], y = c + direction[k + 1];
+              if (x >= 0 && x < heights.size() &&
+                  y >= 0 && y < heights[0].size() && 
+                  heights[r][c] <= heights[x][y]) {
+                  dfs(heights, can_reach, x, y);
+              }
+          }
+      }
+  };
+  
+  //执行用时：40 ms, 在所有 C++ 提交中击败了54.50%的用户
+  //内存消耗：16.9 MB, 在所有 C++ 提交中击败了89.64%的用户
+  
+  ```
 
+## 6.2 回溯法
 
++ **46 [全排列](https://leetcode-cn.com/problems/permutations/) (中等)**
 
+  给定一个不含重复数字的数组 `nums` ，返回其 **所有可能的全排列** 。你可以 **按任意顺序** 返回答案。
 
+  ```
+  输入：nums = [1,2,3]
+  输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+  ```
 
+  ```c++
+  class Solution {
+  public:
+      vector<vector<int>> permute(vector<int>& nums) {
+          vector<vector<int>> ans;
+          backtracking(nums, 0, ans);
+          return ans;
+      }
+      
+      void backtracking(vector<int>& nums, int level, vector<vector<int>>& ans) {
+          if (level == nums.size() - 1) {
+              ans.push_back(nums);
+              return;
+          }
+          
+          for (int i = level; i < nums.size(); ++i) {
+              swap(nums[i], nums[level]);
+              backtracking(nums, level + 1, ans);
+              swap(nums[i], nums[level]);
+          }
+      }
+  };
+  //执行用时：4 ms, 在所有 C++ 提交中击败了71.89%的用户
+  //内存消耗：7.5 MB, 在所有 C++ 提交中击败了73.15%的用户
+  ```
 
++ **77 [ 组合](https://leetcode-cn.com/problems/combinations/) (中等)**
 
+  给定两个整数 `n` 和 `k`，返回范围 `[1, n]` 中所有可能的 `k` 个数的组合。
 
+  你可以按 **任何顺序** 返回答案。
 
+  ```
+  输入：n = 4, k = 2
+  输出：
+  [
+    [2,4],
+    [3,4],
+    [2,3],
+    [1,2],
+    [1,3],
+    [1,4],
+  ]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<vector<int>> combine(int n, int k) {
+          vector<vector<int>> ans;
+          vector<int> path;
+          backtracking(ans, path, 1, n, k);
+          return ans;
+      }
+      
+      void backtracking(vector<vector<int>>& ans, vector<int>& path, int level, int& n, int& k) {
+          if (path.size() == k) {
+              ans.push_back(path);
+              return;
+          }
+          for (int i = level; i <= n; ++i) {
+              path.push_back(i);
+              backtracking(ans, path, i + 1, n, k);
+              path.pop_back();
+          }
+      }
+  };
+  
+  //执行用时：28 ms, 在所有 C++ 提交中击败了24.03%的用户
+  //内存消耗：8.7 MB, 在所有 C++ 提交中击败了98.68%的用户
+  ```
+
+  
 
