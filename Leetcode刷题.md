@@ -1,6 +1,4 @@
----
-title: Leetcode 刷题总结
----
+
 
 刷题顺序参考 《LeetCode 101：和你一起你轻松刷题（C++）》 -- 高畅 Chang Gao
 
@@ -1956,5 +1954,459 @@ public:
   //内存消耗：8.7 MB, 在所有 C++ 提交中击败了98.68%的用户
   ```
 
-  
++ **79 [单词搜索](https://leetcode-cn.com/problems/word-search/) (中等)**
 
+  给定一个 m x n 二维字符网格 board 和一个字符串单词 word 。如果 word 存在于网格中，返回 true ；否则，返回 false 。
+
+  单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中“相邻”单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+  ```
+  输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"
+  输出：true
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool exist(vector<vector<char>>& board, string word) {
+      	if (board.empty() || board[0].empty()) return false;
+          
+          int m = board.size(), n = board[0].size();
+          vector<vector<bool>> visited(m, vector<bool>(n, false));
+          bool find = false;
+          for (int i = 0; i < m; ++i) {
+              for (int j = 0; j < n; ++j) {
+                  backtracking(i, j, board, visited, word, find, 0);
+              }
+          }
+          return find;
+      }
+      
+      void backtracking(int i, int j, vector<vector<char>>& board, vector<vector<bool>>& visited, string& word, bool& find, int pos) {
+          // 函数内剪枝
+          if (i < 0 || i > board.size() || j < 0 || board[0].size()) return;
+          if (visited[i][j] || find || board[i][j] != word[pos]) return;
+          if (pos == word.size() - 1) {
+              find = true;
+              return;
+          }
+          // 探索
+          visited[i][j] = true;
+          backtracking(i + 1, j, board, visited, word, find, pos + 1);
+          backtracking(i - 1, j, board, visited, word, find, pos + 1);
+          backtracking(i, j + 1, board, visited, word, find, pos + 1);
+          backtracking(i, j - 1, board, visited, word, find, pos + 1);
+          // 回溯
+          visited[i][j] = false;
+      }
+  };
+  
+  class Solution {
+  public:
+      bool exist(vector<vector<char>>& board, string word) {
+          
+      }
+  };
+  ```
+
++ **51 [ N 皇后](https://leetcode-cn.com/problems/n-queens/) （困难）**
+
+  n 皇后问题 研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击(任意两个皇后不能位于同一行，同一列，同一斜线)。
+
+  给你一个整数 n ，返回所有不同的 n 皇后问题 的解决方案。
+
+  每一种解法包含一个不同的 n 皇后问题 的棋子放置方案，该方案中 'Q' 和 '.' 分别代表了皇后和空位。
+
+  ```
+  输入：n = 4
+  输出：[[".Q..","...Q","Q...","..Q."],["..Q.","Q...","...Q",".Q.."]]
+  解释：如上图所示，4 皇后问题存在两个不同的解法。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<vector<string>> solveNQueens(int n) {
+         	vector<vector<string>> ans;
+          if (n == 0) return ans;
+          
+          vector<string> board(n, string(n, '.'));
+          vector<bool> column(n, false), ldiag(2 * n - 1, false), rdiag(2 * n - 1, false);
+          backtracking(ans, board, column, ldiag, rdiag, 0, n);
+          return ans;
+      }
+      
+      void backtracking(vector<vector<string>>& ans, string& board, vector<bool>& column, vector<bool>& ldiag, vector<bool>& rdiag, int row, int n) {
+          if (row == n) {
+              ans.push_back(board);
+              return;
+          }
+          for (int i = 0; i < n; ++i) {
+              // 这里的rdiag下标原书(row + i + 1)错了，虽然能够得到正确的答案可能是因为表格小
+              if (column[i] || lidag[n - row + i - 1] || rdiag[row + i]) {
+                  continue;
+              }
+              // 修改当前节点状态
+              board[row][i] = 'Q';
+              column[i] = lidag[n - row + i - 1] = rdiag[row + i] = true;
+              
+              // 递归子节点
+              backtracking(ans, board, column, ldiag, rdiag, row + 1, n);
+              
+              // 复原当前节点状态
+              board[row][i] = '.';
+              column[i] = ldiag[n - row + i - 1] = rdiag[row + i] = false;     
+          }
+      }
+  };
+  //执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  //内存消耗：6.9 MB, 在所有 C++ 提交中击败了96.94%的用户
+  class Solution {
+  public:
+      vector<vector<string>> solveNQueens(int n) {
+          
+      }
+  };
+  ```
+
+## 6.3 广度优先搜索
+
++ 934 [最短的桥](https://leetcode-cn.com/problems/shortest-bridge/) (中等)
+
+  在给定的二维二进制数组 A 中，存在两座岛。（岛是由四面相连的 1 形成的一个最大组。）
+
+  现在，我们可以将 0 变为 1，以使两座岛连接起来，变成一座岛。
+
+  返回必须翻转的 0 的最小数目。（可以保证答案至少是 1 。）
+
+  ```
+  输入：A = [[0,1],[1,0]]
+  输出：1
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<int> direction{-1, 0, 1, 0, -1};
+      int shortestBridge(vector<vector<int>>& grid) {
+      	if (grid.empty() || grid[0].empty()) return 0;
+          
+          int m = grid.size(), n = grid[0].size();
+          queue<pair<int, int>> points;
+          bool flipped = false;
+          // 寻找第一个岛屿 并把岛屿标记为2，记录里第一个岛屿最近的海
+          for (int i = 0; i < m; ++i) {
+              if (flipped) break;
+              for (int j = 0; j < n; ++j) {
+                  if (grid[i][j] == 1) {
+                      dfs(grid, points, i, j);
+                      flipped = true;
+                      break;
+                  }
+              }
+          }
+          
+          int level = 0;
+          int n_points;
+          while (!points.empty()) {
+              n_points = points.size();
+              ++level;
+              while (n_points--) {
+                  auto [r, c] = points.front();
+                  points.pop();
+                  for (int k = 0; k < 4; ++k) {
+                      x = r + direction[k], y = c + direction[k + 1];
+                      if (grid[x][y] == 2) {
+                          continue;
+                      }
+                      if (grid[x][y] == 1) {
+                          return level;
+                      }
+                      points.push({x, y});
+                      grid[x][y] = 2;
+                  }
+              }
+          }
+      	return 0;  
+      }
+      
+      void dfs(vector<vector<int>>& grid, queue<pair<int, int>>& points, int r, int c) {
+          if (r < 0 || r >= grid.size() ||
+              c < 0 || c >= grid[0].size() ||
+              grid[r][c] == 2) {
+              return;
+          }
+          if (grid[r][c] == 0) {
+              points.push({r, c});
+              return;
+          }
+          grid[r][c] = 2;
+          dfs(grid, points, r - 1, c);
+          dfs(grid, points, r, c + 1);
+          dfs(grid, points, r + 1, c);
+          dfs(grid, points, r, c - 1);
+      }
+  };
+  ```
+
++ **126 [ 单词接龙 II](https://leetcode-cn.com/problems/word-ladder-ii/) (困难)**
+
+  按字典 wordList 完成从单词 beginWord 到单词 endWord 转化，一个表示此过程的转换序列是形式上像beginWord -> s1 -> s2 -> ... -> sk 这样的单词序列，并满足：
+  + 每对相邻的单词之间仅有单个字母不同。
+  + 转换过程中的每个单词 si（1 <= i <= k）必须是字典 wordList 中的单词。注意，beginWord 不必是字典 wordList 中的单词。
+  + sk == endWord
+
+  给你两个单词 beginWord 和 endWord ，以及一个字典 wordList 。请你找出并返回所有从 beginWord 到 endWord 的 **最短转换序**列 ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表 [beginWord, s1, s2, ..., sk] 的形式返回。
+
+  ```
+  按字典 wordList 完成从单词 beginWord 到单词 endWord 转化，一个表示此过程的 转换序列 是形式上像 beginWord -> s1 -> s2 -> ... -> sk 这样的单词序列，并满足：
+  
+  每对相邻的单词之间仅有单个字母不同。
+  转换过程中的每个单词 si（1 <= i <= k）必须是字典 wordList 中的单词。注意，beginWord 不必是字典 wordList 中的单词。
+  sk == endWord
+  给你两个单词 beginWord 和 endWord ，以及一个字典 wordList 。请你找出并返回所有从 beginWord 到 endWord 的 最短转换序列 ，如果不存在这样的转换序列，返回一个空列表。每个序列都应该以单词列表 [beginWord, s1, s2, ..., sk] 的形式返回。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<vector<string>> findLadders(string beginWord, string endWord, vector<string>& wordList) {
+  		vector<vector<string>> ans;
+          unordered_set<string> dict;
+          for (const auto& word: wordList) {
+              dict.push_back(word);
+          }
+          if (!dict.count(endWord)) return ans;
+          dict.erase(beginWord);
+          dict.erase(endWord);
+          unordered_set<string> beginVisited{beginWord}, endVisited{endWord};
+          unordered_map<string, vector<string>> nextLevel;
+          bool found = false, reverse = false;
+          while (!beginVisited.empty()) {
+              unordered_set<string> q;
+              for (const auto& word: beginVisited) {
+                  string s = word;
+                  for (int i = 0; i < s.size(); ++i) {
+                      char ch = s[i];
+                      for (int j = 0; j < 26; ++j) {
+                          s[i] = j + 'a';
+                          if (endVisited.count(s)) {
+                              reverse ? nextLevel[s].push_back(word): nextLevel[word].push_back(s);
+                              found = true;
+                          }
+                          if (dict.count(s)) {
+                              reverse ? nextLevel[s].push_back(word): nextLevel[word].push_back(s);
+                          }
+                      }
+                      s[i] = ch;
+                  }
+              }
+              if (found) {
+                  break;
+              }
+              for (const auto& w: q) {
+                  dict.erase(w);
+              }
+              if (q.size() <= endVisited.size()) {
+                  beginVisited = q;
+              } else {
+                  beginVisited = endVisited;
+                  endVisited = q;
+              }  
+          }
+          if (found) {
+              vector<string> path{beginWord};
+              backtracking(beginWord, endWord, nextLevel, path, ans);
+          }
+          return ans;
+      }
+      
+      void backtracking(string beginWord, string endWord, unordered_map<string, vector<string>>& nextLevel,
+                        vector<string>& path, vector<vector<string>>& ans) {
+          if (beginWord == endWord) {
+              ans.push_back(path);
+              return;
+          }
+          for (const auto & word: nextLevel[beginWord]) {
+              path.push_back(word);
+              backtracking(word, endWord, nextLevel, path, ans);
+              path.pop_back();
+          }
+          return;
+      }
+  };
+  
+  //执行用时：4 ms, 在所有 C++ 提交中击败了97.72%的用户
+  //内存消耗：8.3 MB, 在所有 C++ 提交中击败了90.47%的用户
+  ```
+
+## 6.4 练习
+
++ **130 [被围绕的区域](https://leetcode-cn.com/problems/surrounded-regions/) (中等)**
+
+  给你一个 `m x n` 的矩阵 `board` ，由若干字符 `'X'` 和 `'O'` ，找到所有被 `'X'` 围绕的区域，并将这些区域里所有的 `'O'` 用 `'X'` 填充。
+
+  输入：board = [["X","X","X","X"],["X","O","O","X"],["X","X","O","X"],["X","O","X","X"]]
+  输出：[["X","X","X","X"],["X","X","X","X"],["X","X","X","X"],["X","O","X","X"]]
+  解释：被围绕的区间不会存在于边界上，换句话说，任何边界上的 'O' 都不会被填充为 'X'。 任何不在边界上，或不与边界上的 'O' 相连的 'O' 最终都会被填充为 'X'。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。
+
+```c++
+class Solution {
+    public:
+    vector<int> direction{-1, 0, 1, 0, -1};
+    void solve(vector<vector<char>>& board) {
+        int m = board.size(), n = board[0].size();
+        if (m == 0) return;
+        for (int i = 0; i < m; ++i) {
+            backtracking(board, i, 0);
+            backtracking(board, i, n - 1);
+        }
+        for (int j = 0; j < n; ++j) {
+            backtracking(board, 0, j);
+            backtracking(board, m - 1, j);
+        }
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (board[i][j] == 'A') {
+                    board[i][j] = 'O';
+                } else if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+            }
+        }
+
+    }
+    void backtracking(vector<vector<char>>& board, int r, int c) {
+        if ( r < 0 || r >= board.size() ||
+            c < 0 || c >= board[0].size() ||
+            board[r][c] != 'O') {
+            return;
+        }
+        board[r][c] = 'A';
+        int x, y;
+        for (int k = 0; k < 4; ++k) {
+            x = r + direction[k], y = c + direction[k + 1];
+            backtracking(board, x, y);
+        }
+    }
+};
+
+//执行用时：12 ms, 在所有 C++ 提交中击败了80.87%的用户
+//内存消耗：9.7 MB, 在所有 C++ 提交中击败了83.11%的用户
+```
+
++  **257 [二叉树的所有路径](https://leetcode-cn.com/problems/binary-tree-paths/) (简单)**
+
+  给你一个二叉树的根节点 `root` ，按 **任意顺序** ，返回所有从根节点到叶子节点的路径。
+
+  **叶子节点** 是指没有子节点的节点。
+
+  <img src="/Users/shuiguangshan/Documents/GitHub/Leetcode/pics/image-20211029171950395.png" alt="image-20211029171950395" style="zoom:40%;" />
+
+```
+输入：root = [1,2,3,null,5]
+输出：["1->2->5","1->3"]
+```
+
+```c++
+// 回溯法
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    vector<string> binaryTreePaths(TreeNode* root) {
+        vector<string> paths;
+        string path = to_string(root->val);
+        if (root->left == nullptr && root->right == nullptr) {
+            paths.push_back(path);
+            return paths;
+        }
+        backtracking(root, path, paths);
+        return paths;
+    }
+    
+    void backtracking(TreeNode* node, string& path, vector<string>& paths) {
+        if (node->left == nullptr && node->right == nullptr) {
+            paths.push_back(path);
+            return paths;
+        }
+        if (node->left != nullptr) {
+            path += "->" + to_string(node->left->val);
+            backtracking(node->left, path, paths);
+            path.erase(path.size() - (2 + to_string(node->left->val).size()), path.size());
+        }
+        if (node->right != nullptr) {
+            path += "->" + to_string(node->right->val);
+            backtracking(node->right, path, paths);
+            path.erase(path.size() - (2 + to_string(node->right->val).size()), path.size());
+        }
+    }
+};
+
+// 执行用时：4 ms, 在所有 C++ 提交中击败了74.41%的用户
+// 内存消耗：11.9 MB, 在所有 C++ 提交中击败了92.05%的用户
+```
+
++ **47 [全排列 II](https://leetcode-cn.com/problems/permutations-ii/) （中等）**
+
+  给定一个可包含重复数字的序列 `nums` ，**按任意顺序** 返回所有不重复的全排列。
+
+  ```
+  输入：nums = [1,1,2]
+  输出：
+  [[1,1,2],
+   [1,2,1],
+   [2,1,1]]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<vector<int>> permuteUnique(vector<int>& nums) {
+          vector<vector<int>> ans;
+          vector<int> path;
+          unordered_map<int, int> numCount;
+          int n = nums.size();
+  
+          if (nums.size() <= 1) {
+              ans.push_back(nums);
+              return ans;
+          }
+          for (const auto & num: nums) {
+              numCount[num] += 1;
+          }
+          backtracking(ans, numCount, path, n);
+          return ans;
+      }
+  
+      void backtracking(vector<vector<int>>& ans, unordered_map<int, int> &numCount, 
+                        vector<int> path, int& n) {
+          if (path.size() == n) {
+              ans.push_back(path);
+              return;
+          }
+          for (auto & k: numCount) {
+              if (k.second != 0) {
+                  path.push_back(k.first);
+                  --k.second;
+                  backtracking(ans, numCount, path, n);
+                  path.pop_back();
+                  ++k.second;
+              }
+          }
+      }
+  };
+  // 执行用时：8 ms, 在所有 C++ 提交中击败了59.87%的用户
+  // 内存消耗：9.9 MB, 在所有 C++ 提交中击败了17.60%的用户
+  ```
+
+  
