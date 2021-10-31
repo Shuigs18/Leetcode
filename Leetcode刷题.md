@@ -2407,6 +2407,204 @@ public:
   };
   // 执行用时：8 ms, 在所有 C++ 提交中击败了59.87%的用户
   // 内存消耗：9.9 MB, 在所有 C++ 提交中击败了17.60%的用户
+  
+  
+  class Solution {
+      vector<int> vis;
+  public:
+      vector<vector<int>> permuteUnique(vector<int>& nums) {
+          vector<vector<int>> ans;
+          vector<int> perm;
+          sort(nums.begin(), nums.end());
+          backtracking(ans, nums, idx, perm);
+          return ans;
+      }
+      
+      void backtracking(vector<vector<int>>& ans, vector<int>& nums, int idx, vector<int>& perm) {
+          if (idx == nums.size()) {
+              ans.push_back(prem);
+              return ;
+          }
+          for (int i = 0; i < nums.size(); ++i) {
+              if (vis[i] || (i > 0 && nums[i] == nums[i - 1] && !vis[i - 1])) {
+                  continue;
+              }
+              perm.push_back(nums[i]);
+              vis[i] = 1;
+              backtracking(ans, nums, idx + 1, perm);
+              vis[i] = 0;
+              perm.pop_back();
+          }
+      }
+  };
+  
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了93.98%的用户
+  // 内存消耗：8.1 MB, 在所有 C++ 提交中击败了98.14%的用户
+  ```
+
++ **40 [组合总和 II](https://leetcode-cn.com/problems/combination-sum-ii/)(中等)**
+
+  给定一个数组 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。
+
+  candidates 中的每个数字在每个组合中只能使用一次。
+
+  注意：解集不能包含重复的组合。 
+
+  ```
+  输入: candidates = [10,1,2,7,6,1,5], target = 8,
+  输出:
+  [
+  [1,1,6],
+  [1,2,5],
+  [1,7],
+  [2,6]
+  ]
+  ```
+
+  ```c++
+  class Solution {
+      vector<int> vis;
+  public:
+      vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+      	vector<vector<int>> ans;
+          vector<int> path;
+          vis.resize(candidates.size());
+          sort(candidates.begin(), candidates.end());
+          backtracking(ans, candidates, path, 0, target);
+          return ans;
+      }
+      
+      void backtracking(vector<vector<int>>& ans, vector<int>& candidates, vector<int>& path, int level, 
+                        int& target) {
+          int sum = accumulate(path.begin(), path.end(), 0);
+          if (sum == target) {
+              ans.push_back(path);
+              return;
+          }
+          
+          for (int i = 0; i < candidates.size(); ++i) {
+              if (vis[i] || (i > 0 && candidates[i] == candidates[i - 1] && !vis[i - 1]) ||
+                  (sum + candidates[i]) > target) {
+                  continue;
+              }
+              vis[i] = 1;
+              path.push_back(candidates[i]);
+              backtracking(ans, candidates, path, i + 1, target);
+              path.pop_back();
+              vis[i] = 0;
+          }
+      }
+  };
+  
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了88.24%的用户
+  // 内存消耗：10.4 MB, 在所有 C++ 提交中击败了74.26%的用户
+  ```
+
++ **37 [解数独](https://leetcode-cn.com/problems/sudoku-solver/) (困难)**
+
+  编写一个程序，通过填充空格来解决数独问题。
+
+  数独的解法需 遵循如下规则：
+
+  数字 1-9 在每一行只能出现一次。
+  数字 1-9 在每一列只能出现一次。
+  数字 1-9 在每一个以粗实线分隔的 3x3 宫内只能出现一次。（请参考示例图）
+  数独部分空格内已填入了数字，空白格用 '.' 表示
+
+  ```
+  输入：board = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+  输出：[["5","3","4","6","7","8","9","1","2"],["6","7","2","1","9","5","3","4","8"],["1","9","8","3","4","2","5","6","7"],["8","5","9","7","6","1","4","2","3"],["4","2","6","8","5","3","7","9","1"],["7","1","3","9","2","4","8","5","6"],["9","6","1","5","3","7","2","8","4"],["2","8","7","4","1","9","6","3","5"],["3","4","5","2","8","6","1","7","9"]]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+  
+      bitset<9> getPossibleStatus(int x, int y) {
+          return ~(rows[x] | cols[y] | cells[x / 3][y / 3]);
+      }
+  
+      vector<int> getNext(vector<vector<char>>& board) {
+          // 找出回溯最少的位置进行填充
+          // 标准就是，其横 竖 3x3宫格内填充的种类最多，那么留给当前空的数字就最少
+          // 探索的空间就相应的减少
+          vector<int> ret;
+          int minCont = 10;
+          for (int i = 0; i < board.size(); ++i) {
+              for (int j = 0; j < board[0].size(); ++j) {
+                  if (board[i][j] != '.') continue;
+                  auto cur = getPossibleStatus(i, j);
+                  if (cur.count() >= minCont) continue;
+                  ret = {i, j};
+                  minCont = cur.count();
+              }
+          }
+          return ret;
+      }
+  
+      void fillNum(int x, int y, int n, bool fillFlag) {
+          rows[x][n] = (fillFlag) ? 1: 0;
+          cols[y][n] = (fillFlag) ? 1: 0;
+          cells[x/3][y/3][n] = (fillFlag) ? 1: 0;
+      }
+  
+      bool dfs(vector<vector<char>>& board, int cnt) {
+          if (cnt == 0) return true;
+  
+          // 在当前表格中找出回溯最少的位置进行填充
+          auto next = getNext(board);
+          auto bits = getPossibleStatus(next[0], next[1]);
+          for (int i = 0; i < bits.size(); ++i) {
+              if (!bits.test(i)) continue;
+              // 找到当前位置 next[0] next[1] 可以填充的数字
+              // 更新 3个状态表格
+              fillNum(next[0], next[1], i, true);
+              // 填充board
+              board[next[0]][next[1]] = i + '1';
+              // 递归子节点 满足条件就直接return 因为题目没有要求找出所有的情况
+              if (dfs(board, cnt - 1)) return true;
+              // 回溯
+              board[next[0]][next[1]] = '.';
+              fillNum(next[0], next[1], i, false);
+          }
+          return false;
+      }
+  
+      void solveSudoku(vector<vector<char>>& board) {
+          // 用于状态检查 初始化
+          rows = vector<bitset<9>> (9, bitset<9>());
+          cols = vector<bitset<9>> (9, bitset<9>());
+          cells = vector<vector<bitset<9>>> (3, vector<bitset<9>>(3, bitset<9>()));
+  
+          // 记录总共需要填入多少个数，作为结束的判断
+          int cnt = 0;
+          for (int i = 0; i < board.size(); ++i) {
+              for (int j = 0; j < board[0].size(); ++j) {
+                  cnt += (board[i][j] == '.');
+                  if (board[i][j] == '.') continue;
+                  // 更新检查列的状态
+                  int n = board[i][j] - '1';
+                  // bitset 中的下标是从右向左 n - 0  所以这边的移位是反的
+                  rows[i] |= (1 << n);
+                  cols[j] |= (1 << n);
+                  cells[i / 3][j / 3] |= (1 << n);
+              }
+          }
+          dfs(board, cnt);
+      }
+  
+  
+  private:
+      vector<bitset<9>> rows;
+      vector<bitset<9>> cols;
+      vector<vector<bitset<9>>> cells;
+  
+  };
+  
+  //执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  //内存消耗：6.6 MB, 在所有 C++ 提交中击败了11.37%的用户
+  
   ```
 
   
+
