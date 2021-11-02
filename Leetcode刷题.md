@@ -2603,8 +2603,251 @@ public:
   
   //执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
   //内存消耗：6.6 MB, 在所有 C++ 提交中击败了11.37%的用户
+  ```
+
++ **310 [最小高度树](https://leetcode-cn.com/problems/minimum-height-trees/) (中等)**
+
+  树是一个无向图，其中任何两个顶点只通过一条路径连接。 换句话说，一个任何没有简单环路的连通图都是一棵树。
+
+  给你一棵包含 n 个节点的树，标记为 0 到 n - 1 。给定数字 n 和一个有 n - 1 条无向边的 edges 列表（每一个边都是一对标签），其中 edges[i] = [ai, bi] 表示树中节点 ai 和 bi 之间存在一条无向边。
+
+  可选择树中任何一个节点作为根。当选择节点 x 作为根节点时，设结果树的高度为 h 。在所有可能的树中，具有最小高度的树（即，min(h)）被称为 最小高度树 。
+
+  请你找到所有的 最小高度树 并按 任意顺序 返回它们的根节点标签列表。
+
+  树的 高度 是指根节点和叶子节点之间最长向下路径上边的数量。
+
+  ```
+  输入：n = 4, edges = [[1,0],[1,2],[1,3]]
+  输出：[1]
+  解释：如图所示，当根是标签为 1 的节点时，树的高度是 1 ，这是唯一的最小高度树。
+  ```
+
+  ```c++
+  class Solution {
+  public:
   
+  
+      vector<int> findMinHeightTrees(int n, vector<vector<int>>& edges) {
+          if (n == 1) return {0};
+  
+          // 每个节点对应的度
+          vector<int> degree(n);
+          // 邻接表
+          map<int, vector<int>> adjMatrix;
+          vector<int> ans;
+          for (int i = 0; i < edges.size(); ++i) {
+              int u = edges[i][0];
+              int v = edges[i][1];
+              ++degree[u];
+              ++degree[v];
+              adjMatrix[u].push_back(v);
+              adjMatrix[v].push_back(u);
+          }
+          // 叶子结点
+          queue<int> leaves;
+          for (int i = 0; i < n; ++i) {
+              if(degree[i] == 1) {
+                  leaves.push(i);
+              }
+          }
+          while(!leaves.empty()) {
+              ans.clear();
+              int sz = leaves.size();
+              for (int i = 0; i < sz; ++i) {
+                  int leaf = leaves.front();
+                  leaves.pop();
+                  ans.push_back(leaf);
+                  degree[leaf]--;
+                  // 与其相连的节点度减一
+                  for (auto adjLeaf: adjMatrix[leaf]) {
+                      degree[adjLeaf]--;
+                      if (degree[adjLeaf] == 1) {
+                          leaves.push(adjLeaf);
+                      }
+                  }
+                  // 最后只会保留 度为0 的顶点 这也是我们要找的点
+              }
+          }
+          return ans;
+      }
+  };
+  
+  // 执行用时：72 ms, 在所有 C++ 提交中击败了52.43%的用户
+  // 内存消耗：30.9 MB, 在所有 C++ 提交中击败了29.07%的用户
+  ```
+
+# 7. DP
+
+## 7.1 基本动态规划：一维
+
++ **70 [ 爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/) (简单)**
+
+  假设你正在爬楼梯。需要 *n* 阶你才能到达楼顶。
+
+  每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+  **注意：**给定 *n* 是一个正整数。
+
+  ```
+  输入： 2
+  输出： 2
+  解释： 有两种方法可以爬到楼顶。
+  1.  1 阶 + 1 阶
+  2.  2 阶
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int climbStairs(int n) {
+          if (n <= 2) {
+              return n;
+          }
+          int pre2 = 1, pre1 = 2, cur;
+          for (int i = 3; i <= n; ++i) {
+              cur = pre2 + pre1;
+              pre2 = pre1;
+              pre1 = cur;
+          }
+          return cur;  
+      }
+  };
+  
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：5.8 MB, 在所有 C++ 提交中击败了73.18%的用户
+  ```
+
++ **198 [打家劫舍](https://leetcode-cn.com/problems/house-robber/) (中等)**
+
+  你是一个专业的小偷，计划偷窃沿街的房屋。每间房内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+
+  给定一个代表每个房屋存放金额的非负整数数组，计算你 不触动警报装置的情况下 ，一夜之内能够偷窃到的最高金额
+
+  ```
+  输入：[1,2,3,1]
+  输出：4
+  解释：偷窃 1 号房屋 (金额 = 1) ，然后偷窃 3 号房屋 (金额 = 3)。
+       偷窃到的最高金额 = 1 + 3 = 4 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int rob(vector<int>& nums) {
+          if (nums.empty()) return 0;
+          int n = nums.size();
+          if (n == 1) return nums[0];
+          int pre1 = 0, pre2 = 0, cur;
+          for (int i = 0; i < nums.size(); ++i) {
+              cur = max(pre1, pre2 + nums[i]);
+              pre2 = pre1;
+              pre1 = cur;
+          }
+          return cur;
+      }
+  };
+  
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了39.67%的用户
+  // 内存消耗：7.3 MB, 在所有 C++ 提交中击败了99.76%的用户
+  ```
+
++ 413 等差数列划分
+
+  如果一个数列 至少有三个元素 ，并且任意两个相邻元素之差相同，则称该数列为等差数列。
+
+  例如，[1,3,5,7,9]、[7,7,7,7] 和 [3,-1,-5,-9] 都是等差数列。
+  给你一个整数数组 nums ，返回数组 nums 中所有为等差数组的 子数组 个数。
+
+  **子数组** 是数组中的一个**连续序列。**
+
+  ```
+  输入：nums = [1,2,3,4]
+  输出：3
+  解释：nums 中有三个子等差数组：[1, 2, 3]、[2, 3, 4] 和 [1,2,3,4] 自身。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int numberOfArithmeticSlices(vector<int>& nums) {
+          if (nums.empty() || nums.size() <= 2) return 0;
+          int n = nums.size();
+          vector<int> dp(n, 0);
+          for (int i = 2; i < n; ++i) {
+              dp[i] = (nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 2]) ? dp[i - 1] + 1: 0;
+          }
+          return accumulate(dp.begin(), dp.end(), 0);
+      }
+  };
+  
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了45.24%的用户
+  // 内存消耗：7.2 MB, 在所有 C++ 提交中击败了40.85%的用户
+  ```
+
+## 7.2 基本动态规划
+
++ **64 [最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/) (中等)**
+
+  给定一个包含非负整数的 `*m* x *n*` 网格 `grid` ，请找出一条从左上角到右下角的路径，使得路径上的数字总和为最小。
+
+  **说明：**每次只能向下或者向右移动一步。
+
+  ```
+  输入：grid = [[1,3,1],[1,5,1],[4,2,1]]
+  输出：7
+  解释：因为路径 1→3→1→1→1 的总和最小。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int minPathSum(vector<vector<int>>& grid) {
+  
+          if (grid.empty() || grid[0].empty()) return 0;
+          int m = grid.size(), n = grid[0].size();
+  
+          vector<vector<int>> ans(m, vector<int>(n, 99999));
+          ans[0][0] = grid[0][0];
+          for (int i = 0; i < m; ++i) {
+              for (int j = 0; j < n; ++j) {
+                  int x_left = i, y_left = j - 1;
+                  int x_up = i - 1, y_up = j;
+                  if (x_left >= 0 && x_left < m &&
+                      y_left >= 0 && y_left < n) {
+                      ans[i][j] = min(ans[i][j], ans[x_left][y_left] + grid[i][j]);
+                  }
+                  if (x_up >= 0 && x_up < m &&
+                      y_up >= 0 && y_up < n) {
+                      ans[i][j] = min(ans[i][j], ans[x_up][y_up]+ grid[i][j]);
+                  }
+              }
+          }
+          return ans[m - 1][n - 1];
+      }
+  };
+  // 执行用时：8 ms, 在所有 C++ 提交中击败了81.61%的用户
+  // 内存消耗：9.9 MB, 在所有 C++ 提交中击败了18.41%的用户
+  ```
+
++ **542 [01 矩阵](https://leetcode-cn.com/problems/01-matrix/) (中等)**
+
+  给定一个由 0 和 1 组成的矩阵 mat ，请输出一个大小相同的矩阵，其中每一个格子是 mat 中对应位置元素到最近的 0 的距离。
+
+  两个相邻元素间的距离为 1 。
+
+  ```
+  输入：mat = [[0,0,0],[0,1,0],[0,0,0]]
+  输出：[[0,0,0],[0,1,0],[0,0,0]]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<vector<int>> updateMatrix(vector<vector<int>>& mat) {
+  
+      }
+  };
   ```
 
   
-
