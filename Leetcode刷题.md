@@ -748,11 +748,9 @@ public:
 
 ## 4.1 算法技巧
 
-二分查找时区间的左右端取开区间还是闭区间在绝大多数时候都可以，因此有些初学者会容易搞不清楚如何定义区间开闭性。这里我提供两个小诀窍，第一是尝试熟练使用一种写法，比如左闭右开（满足 C++、 Python 等语言的习惯）或左闭右闭（便于处理边界条件），尽量只保持这一种写法；第二是在刷题时思考如果最后区间只剩下一个数或者两个数，自己的写
-法是否会陷入死循环，如果某种写法无法跳出死循环，则考虑尝试另一种写法。
+二分查找时区间的左右端取开区间还是闭区间在绝大多数时候都可以，因此有些初学者会容易搞不清楚如何定义区间开闭性。这里我提供两个小诀窍，第一是尝试熟练使用一种写法，比如左闭右开（满足 C++、 Python 等语言的习惯）或左闭右闭（便于处理边界条件），尽量只保持这一种写法；第二是在刷题时思考如果最后区间只剩下一个数或者两个数，自己的写法是否会陷入死循环，如果某种写法无法跳出死循环，则考虑尝试另一种写法。
 
-二分查找也可以看作双指针的一种特殊情况，但我们一般会将二者区分。双指针类型的题，
-指针通常是一步一步移动的，而在二分查找里，指针每次移动半个区间长度。
+二分查找也可以看作双指针的一种特殊情况，但我们一般会将二者区分。双指针类型的题，指针通常是一步一步移动的，而在二分查找里，指针每次移动半个区间长度。
 
 ​    
 
@@ -2679,6 +2677,14 @@ public:
 
 # 7. DP
 
++ 确定状态 
++ 确定动作
++ 在当前状态下采取可能的所有动作 取最优就是状态转移方程
++ 动态规划也是通过递推的方式实现，所以边界条件也要确定清楚
++ 无后效性：当前的状态仅依赖于上一状态和动作
+
+
+
 ## 7.1 基本动态规划：一维
 
 + **70 [ 爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/) (简单)**
@@ -2785,7 +2791,7 @@ public:
   // 内存消耗：7.2 MB, 在所有 C++ 提交中击败了40.85%的用户
   ```
 
-## 7.2 基本动态规划
+## 7.2 基本动态规划: 二维
 
 + **64 [最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/) (中等)**
 
@@ -2845,9 +2851,740 @@ public:
   class Solution {
   public:
       vector<vector<int>> updateMatrix(vector<vector<int>>& mat) {
+  		int m = mat.size(), n = mat[0].size();
+          vector<vector<int>> dp(m, vector<int>(n, INT_MAX - 1));
+          for (int i = 0; i < m; ++i) {
+              for (int j = 0; j < n; ++j) {
+                  if (mat[i][j] == 0) {
+                      dp[i][j] = 0;
+                  } else {
+                      if (i > 0) {
+                          dp[i][j] = min(dp[i][j], dp[i - 1][j] + 1);
+                      }
+                      if (j > 0) {
+                          dp[i][j] = min(dp[i][j], dp[i][j - 1] + 1);
+                      }
+                  }
+              }
+          }
+          for (int i = m - 1; i >= 0; ++i) {
+              for (int j = n - 1; j >= 0; ++j) {
+                  if (mat[i][j] == 1) {
+                      if (i < m - 1) {
+                          dp[i][j] = min(dp[i][j], dp[i + 1][j] + 1);
+                      }
+                      if (j < n - 1) {
+                          dp[i][j] = min(dp[i][j], dp[i][j + 1] + 1);
+                      }
+                  }
+              }
+          }
+          return dp;
+      }
+  };
   
+  // 执行用时：64 ms, 在所有 C++ 提交中击败了78.61%的用户
+  // 内存消耗：26.9 MB, 在所有 C++ 提交中击败了80.88%的用
+  ```
+
++ **221 [最大正方形](https://leetcode-cn.com/problems/maximal-square/) (中等)**
+
+  在一个由 `'0'` 和 `'1'` 组成的二维矩阵内，找到只包含 `'1'` 的最大正方形，并返回其面积。
+
+  ```
+  输入：matrix = [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+  输出：4
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int maximalSquare(vector<vector<char>>& matrix) {
+          if (matrix.empty() || matrix[0].empty()) return 0;
+          int m = matrix.size(), n = matrix[0].size();
+          vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+          int max_side = 0;
+          for (int i = 1; i < m + 1; ++i) {
+              for (int j = 1; j < n + 1; ++j) {
+                  if (matrix[i - 1][j - 1] == '1') {
+                      dp[i][j] = min(dp[i-1][j-1], min(dp[i-1][j], dp[i][j-1])) + 1;
+                  }
+                  max_side = max(max_side, dp[i][j]);
+              }
+          }
+          return max_side * max_side;
+      }
+  };
+  
+  // 执行用时：24 ms, 在所有 C++ 提交中击败了67.43%的用户
+  // 内存消耗：11.6 MB, 在所有 C++ 提交中击败了46.41%的用户
+  ```
+
+通过补列的方式，可以将边界上的点都更新到（221），如果不补列的话就需要用更多的if条件进行更新（542）
+
+## 7.4 分割类型题
+
++ **279 [完全平方数](https://leetcode-cn.com/problems/perfect-squares/)(中等)**
+
+  给定正整数 n，找到若干个完全平方数（比如 1, 4, 9, 16, ...）使得它们的和等于 n。你需要让组成和的完全平方数的个数最少。
+
+  给你一个整数 n ，返回和为 n 的完全平方数的 最少数量 。
+
+  完全平方数是一个整数，其值等于另一个整数的平方；换句话说，其值等于一个整数自乘的积。例如，1、4、9 和 16 都是完全平方数，而 3 和 11 不是。
+
+  ```
+  输入：n = 12
+  输出：3 
+  解释：12 = 4 + 4 + 4
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int numSquares(int n) {
+  		vector<int> dp(n + 1, INT_MAX - 1);
+          dp[0] = 0;
+          for (int i = 0; i <= n; ++i) {
+              for (int j = 0; j * j <= i; ++j) {
+                  dp[i] = min(dp[i], dp[i - j * j] + 1);
+              }
+          }
+          return dp[n];
+      }
+  };
+  
+  // 执行用时：224 ms, 在所有 C++ 提交中击败了15.48%的用户
+  // 内存消耗：8.8 MB, 在所有 C++ 提交中击败了75.83%的用户
+  ```
+
++ **91 [解码方法](https://leetcode-cn.com/problems/decode-ways/)(中等)**
+
+  一条包含字母 `A-Z` 的消息通过以下映射进行了 **编码** ：
+
+  ```
+  'A' -> 1
+  'B' -> 2
+  ...
+  'Z' -> 26
+  ```
+
+  要 解码 已编码的消息，所有数字必须基于上述映射的方法，反向映射回字母（可能有多种方法）。例如，"11106" 可以映射为：
+
+  + "AAJF" ，将消息分组为 (1 1 10 6)
+  + "KJF" ，将消息分组为 (11 10 6)
+    注意，消息不能分组为  (1 11 06) ，因为 "06" 不能映射为 "F" ，这是由于 "6" 和 "06" 在映射中并不等价。
+
+  给你一个只含数字的 非空 字符串 s ，请计算并返回 解码 方法的 总数 。
+
+  题目数据保证答案肯定是一个 32 位 的整数。
+
+  ```
+  输入：s = "12"
+  输出：2
+  解释：它可以解码为 "AB"（1 2）或者 "L"（12）。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int numDecodings(string s) {
+      	int n = s.length();
+          if (n == 0) return 0;
+          int pre = s[0] - '0';
+          if (!pre) return 0;
+          if (n == 1) return 1;
+          // 到这里n 至少大于或等于2，
+          vector<int> dp(n + 1, 1);
+          for (int i = 2; i <= n; ++i) {
+              int cur = s[i - 1] - '0';
+              if ((pre == 0 || pre > 2) && cur == 0) {
+                  return 0;
+              }
+              if ((pre == 1) || (pre == 2 && cur < 7)) {
+                  if (cur) {
+                      dp[i] = dp[i - 1] + dp[i - 2];
+                  } else {
+                      dp[i] = dp[i - 2];
+                  }
+              } else {
+                  dp[i] = dp[i - 1];
+              }
+              pre = cur;
+          }
+          return dp[n];
+      }
+  };
+  ```
+
++ **139 [单词拆分](https://leetcode-cn.com/problems/word-break/) (中等)**
+
+  给你一个字符串 s 和一个字符串列表 wordDict 作为字典，判定 s 是否可以由空格拆分为一个或多个在字典中出现的单词。
+
+  说明：拆分时可以重复使用字典中的单词。
+
+  ```
+  输入: s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+  输出: false
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool wordBreak(string s, vector<string>& wordDict) {
+      	int n = s.length();
+          vector<bool> dp(n + 1, false);
+          dp[0] = true;
+          for (int i = 1; i < n + 1; ++i) {
+              for (const string & word: wordDict) {
+                  int len = word.length();
+                  if (i >= len && s.sutstr(i - len, len) == word) {
+                      dp[i] = dp[i] || dp[i - len]
+                  }
+              }
+          }
+          return dp[n];
+      }
+  };
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了93.77%的用户
+  // 内存消耗：7.2 MB, 在所有 C++ 提交中击败了99.53%的用户
+  ```
+
+## 7.5 子序列问题
+
++ **300 [最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/) (中等)**
+
+  给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。
+
+  子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。
+
+  定义 $\textit{dp}[i]$ 为考虑前 i个元素，以第 i 个数字结尾的最长上升子序列的长度，**注意 $\textit{nums}[i]$ 必须被选取。**
+
+  ```
+  输入：nums = [10,9,2,5,3,7,101,18]
+  输出：4
+  解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int lengthOfLIS(vector<int>& nums) {
+      	int max_length = 0, n = nums.size();
+          if (n <= 0) return 0;
+          vector<int> dp(n, 1);
+          for (int i = 0; i < n; ++i) {
+              for (int j = 0; j < i; ++j) {
+                  if (nums[i] > nums[j]) {
+                      dp[i] = max(dp[i], dp[j] + 1);
+                  }
+              }
+              max_length = max(max_length, dp[i]);
+          }
+          return max_length;
+      }
+  };
+  // 执行用时：264 ms, 在所有 C++ 提交中击败了51.06%的用户
+  // 内存消耗：10.3 MB, 在所有 C++ 提交中击败了14.88%的用户
+  
+  
+  class Solution {
+  public:
+      int lengthOfLIS(vector<int>& nums) {
+          int len = 1, n = nums.size();
+          if (n <= 0) return 0;
+          vector<int> d(n + 1, 0);
+          d[len] = nums[0];
+          for (int i = 1; i < n; i++) {
+              if (nums[i] > d[len]) {
+                  d[++len] = nums[i];
+              } else {
+                  int l = 1, r = len, pos = 0;
+                  while (l < r) {
+                      int middle = (l + r) / 2;
+                      if (d[middle] < nums[i]) {
+                          pos = middle;
+                          l = middle + 1;
+                      } else {
+                          r = middle;
+                      }
+                  }
+                  d[pos + 1] = nums[i];
+              }
+          }
+          return len;
+      }
+  };
+  
+  // 执行用时：8 ms, 在所有 C++ 提交中击败了92.04%的用户
+  // 内存消耗：10.3 MB, 在所有 C++ 提交中击败了41.16%的用户
+  ```
+
++ **1143 [最长公共子序列](https://leetcode-cn.com/problems/longest-common-subsequence/)(中等)**
+
+  给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
+
+  一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+
+  例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
+  两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
+
+  ```
+  输入：text1 = "abcde", text2 = "ace" 
+  输出：3  
+  解释：最长公共子序列是 "ace" ，它的长度为 3 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int longestCommonSubsequence(string text1, string text2) {
+          int m = text1.length(), n = text2.length();
+          vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+          for (int i = 1; i <= m; ++i) {
+              for (int j = 1; j <= n; ++j) {
+                  if (text1[i - 1] == text2[j - 1]) {
+                      dp[i][j] = dp[i - 1][j - 1] + 1;
+                  } else {
+                      dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+                  }
+              }
+          }
+          return dp[m][n];
+      }
+  };
+  
+  // 执行用时：20 ms, 在所有 C++ 提交中击败了81.57%的用户
+  // 内存消耗：12.8 MB, 在所有 C++ 提交中击败了49.65%的用户
+  ```
+
+## 7.6 背包问题
+
++ 0—1背包问题
+
+  ```c++
+  int knapsack(vector<int> weights, vector<int> values, int N, int W) {
+      // 前i件物品体积不超过j的情况下所能达到的最大价值
+      // 在体积约束j（状态变量）的条件下，放第i件物品时（决策变量x）, x=0可以不放，那么就等于放第i-1件
+      // 物品时的最大价值， dp[i - 1][j]
+      // 如果放物品x = 1, 那么 dp[i - 1][j - w] + v
+      // dp[i][j] 为这两条路径的最大值。
+      vector<vector<int>> dp(N + 1, vector<int>(W + 1, 0));
+      // 这里为什么要是N+1 W+1,原因是，动态规划是一个递推公式，
+      // 需要有初始状态，我们这里相当于构建了虚拟的初始状态
+      for (int i = 1; i <= N; ++i) {
+          int w = weights[i - 1], v = values[i - 1];
+          for (int j = 1; j <= W; ++j) {
+              // 如果当前状态变量 体积约束大于当前物品，才有可能再放入第i件物品
+              if (j >= w) {
+                  dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - w] + v);
+              } else {
+                  dp[i][j] = dp[i - 1][j];
+              }
+          }
+      }
+      return dp[N][W];
+  }
+  ```
+
+  上述代码的时间复杂度和空间复杂度都是 $O(NW)$   可以看到，第i行的更新只依赖于第i-1行的更新，所以可以进行数组的压缩使复杂度将为 $O(W)$ 
+
+  ```c++
+  int knapsack(vector<int> weights, vector<int> values, int N, int W) {
+  	vector<int> dp(W + 1, 0);
+      for (int i = 1; i <= N; ++i) {
+          int w = weights[i - 1], v = values[i - 1];
+          for (int j = W; j >= w; --j) {
+              dp[j] = max(dp[j], dp[j - w] + v);
+          }
+      }
+      return dp[W];
+  }
+  ```
+
++ 完全背包问题
+
+  假设我们遍历到物品 i = 2，且其体积为 w = 2，价值为 v = 3；对于背包容量 j = 5，最多只能装下 2 个该物品。那么我们的状态转移方程就变成了 $dp[2] [5] = max(dp[1] [5], dp[1] [3] + 3, dp[1] [1] + 6)$。如果采用这种方法，假设背包容量无穷大而物体的体积无穷小，我们这里的比较次数也会趋近于无穷大，远超 O„NW” 的时间复杂度。
+  $$
+  \begin{align}
+   dp[2][5] &= max(dp[1] [5], dp[1] [3] + 3, dp[1] [1] + 6) \\\\
+   &= max(dp[1] [5], max(dp[1][3] + 3, dp[1] [1] + 6)) \\\\
+   &= max(dp[1] [5], max(dp[1][3], dp[1][1] + 3) + 3) \\\\
+   &= max(dp[1] [5], dp[2][3] + 3)
+   \end{align}
+  $$
+  
+
+  ```c++
+  int knapsack(vector<int> weights, vector<int> values, int N, int W) {
+  	vector<vector<int>> dp(N + 1, vector<int>(W + 1, 0));
+      for (int i = 1; i <= N; ++i) {
+          int w = weights[i - 1], v = values[i - 1];
+          for (int j = 1; j <= W; ++j) {
+              if (j >= w) {
+                  dp[i][j] = max(dp[i - 1][j], dp[i][j - w] + v);
+              } else {
+                  dp[i][j] = dp[i - 1][j];
+              }
+          }
+      }
+      return dp[N][W];
+  }
+  ```
+
+  空间压缩
+
+  ```c++
+  int knapsack(vector<int> weights, vector<int> values, int N, int W) {
+      vector<int> dp(W + 1, 0);
+      for (int i = 1; i <= N; ++i) {
+          int w = weights[i], v = values[i];
+          for (int j = 1; j <= W; ++j) {
+              if (j >= w) {
+                  dp[j] = max(dp[j], dp[j - w] + v);
+              } 
+          }
+      }
+      return dp[W];
+  }
+  ```
+
++ **416 [分割等和子集](https://leetcode-cn.com/problems/partition-equal-subset-sum/) (中等)**
+
+  给你一个 **只包含正整数** 的 **非空** 数组 `nums` 。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+  ```
+  输入：nums = [1,5,11,5]
+  输出：true
+  解释：数组可以分割成 [1, 5, 5] 和 [11] 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool canPartition(vector<int>& nums) {
+      	int sum = accumulate(nums.begin(), nums.end(), 0);
+          if (sum % 2 == 1)  return false;
+          vector<int> dp(sum / 2 + 1, 0);
+          for (int i = 1; i <= nums.size(); ++i) {
+              int w = nums[i - 1];
+              for (int j = sum / 2; j >= w; --j) {
+                  dp[j] = max(dp[j], dp[j - w] + w);
+                  if (dp[j] == sum / 2) return true;
+              }
+          }
+          return false;
+      }
+  };
+  // 执行用时：84 ms, 在所有 C++ 提交中击败了91.15%的用户
+  // 内存消耗：9.5 MB, 在所有 C++ 提交中击败了74.84%的用户
+  ```
+
++ **474 [ 一和零](https://leetcode-cn.com/problems/ones-and-zeroes/) (中等)**
+
+  给你一个二进制字符串数组 strs 和两个整数 m 和 n 。
+
+  请你找出并返回 strs 的最大子集的长度，该子集中 最多 有 m 个 0 和 n 个 1 。
+
+  如果 x 的所有元素也是 y 的元素，集合 x 是集合 y 的 子集 。
+
+  ```
+  输入：strs = ["10", "0001", "111001", "1", "0"], m = 5, n = 3
+  输出：4
+  解释：最多有 5 个 0 和 3 个 1 的最大子集是 {"10","0001","1","0"} ，因此答案是 4 。
+  其他满足题意但较小的子集包括 {"0001","1"} 和 {"10","1","0"} 。{"111001"} 不满足题意，因为它含 4 个 1 ，大于 n 的值 3 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int findMaxForm(vector<string>& strs, int m, int n) {
+          vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+          for (const string& str: strs) {
+              auto [count0, count1] = count(str);
+              // 0 - 1背包逆序遍历
+              for (int i = m; i >= count0; --i) {
+                  for (int j = n; j >= count1; --j) {
+                      dp[i][j] = max(dp[i][j], dp[i - count0][j - count1] + 1);
+                  }
+              }
+          }
+          return dp[m][n];
+      }
+  
+      pair<int, int> count(const string& str) {
+          int count0 = 0, count1 = 0;
+          for (int i = 0; i < str.length(); ++i) {
+              if (str[i] == '0') ++count0;
+              else ++count1;
+          }
+          return make_pair(count0, count1);
+      }
+  };
+  // 执行用时：200 ms, 在所有 C++ 提交中击败了55.31%的用户
+  // 内存消耗：9.4 MB, 在所有 C++ 提交中击败了89.55%的用户
+  ```
+
++ **322 [零钱兑换](https://leetcode-cn.com/problems/coin-change/)(中等)**
+
+  给你一个整数数组 coins ，表示不同面额的硬币；以及一个整数 amount ，表示总金额。
+
+  计算并返回可以凑成总金额所需的 最少的硬币个数 。如果没有任何一种硬币组合能组成总金额，返回 -1 。
+
+  你可以认为每种硬币的数量是无限的。
+
+  ```
+  输入：coins = [1, 2, 5], amount = 11
+  输出：3 
+  解释：11 = 5 + 5 + 1
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int coinChange(vector<int>& coins, int amount) {
+          if (coins.empty()) return -1;
+          vector<int> dp(amount + 1,  amount + 1);
+          dp[0] = 0;
+          for (int i = 1; i <= coins.size(); ++i) {
+              int v = coins[i - 1];
+              for (int j = 1; j <= amount; ++j) {
+                  if (j >= v) {
+                      dp[j] = min(dp[j], dp[j - v] + 1);
+                  }
+              }
+          }
+          return dp[amount] == amount + 1 ? -1: dp[amount];
+      }
+  };
+  // 执行用时：56 ms, 在所有 C++ 提交中击败了90.29%的用户
+  // 内存消耗：14 MB, 在所有 C++ 提交中击败了86.61%的用户
+  ```
+
+## 7.7 字符串编辑
+
++ **72 [ 编辑距离](https://leetcode-cn.com/problems/edit-distance/) (困难)**
+
+  给你两个单词 word1 和 word2，请你计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+  你可以对一个单词进行如下三种操作：
+
+  + 插入一个字符
+  + 删除一个字符
+  + 替换一个字符
+
+  ```
+  输入：word1 = "horse", word2 = "ros"
+  输出：3
+  解释：
+  horse -> rorse (将 'h' 替换为 'r')
+  rorse -> rose (删除 'r')
+  rose -> ros (删除 'e')
+  ```
+
+  ```c++
+  // 状态 dp[i][j] 第一个字符串到位置i为止，第二个字符串到位置j为止，最多需要编辑几步。
+  // 对于这个状态可以由上一阶段的哪些状态转变过来。 三个 dp[i - 1][j - 1]  dp[i][j - 1]  dp[i - 1][j]
+  // 接下来在看这三个状态怎么转换到状态 dp[i][j] 
+  // 分类讨论 当word1[i] == word2[j] 时 dp[i][j] = dp[i - 1][j - 1], 
+  // word1[i] ！= word2[j] 时,dp[i][j] = dp[i - 1][j - 1] + 1 这个时候只需要采取替换操作，因为另外两个操作会使得步数更多
+  // 而对于dp[i][j - 1]只需要插入i或者删除j即可，dp[i][j] = dp[i][j - 1] + 1 另一个同理
+  // 考虑边界条件，dp[0][0] dp[i][0] dp[j][0] 
+  class Solution {
+  public:
+      int minDistance(string word1, string word2) {
+          int m = word1.length(), n = word2.length();
+          vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+          for (int i = 0; i <= m; ++i) {
+              for (int j = 0; j <= n; ++j) {
+                  if (j == 0) {
+                      dp[i][j] = i;
+                  } else if (i == 0) {
+                      dp[i][j] = j;
+                  } else {
+                      dp[i][j] = min(
+                          dp[i - 1][j - 1] + ((word1[i - 1] == word2[j - 1])? 0:1),
+                          min(dp[i][j - 1] + 1, dp[i - 1][j] + 1)
+                      );
+                  }
+              }
+          }
+          return dp[m][n];
+      }
+  };
+  
+  // 执行用时：20 ms, 在所有 C++ 提交中击败了20.18%的用户
+  // 内存消耗：8.9 MB, 在所有 C++ 提交中击败了24.01%的用户
+  ```
+
+
++ **650 [只有两个键的键盘](https://leetcode-cn.com/problems/2-keys-keyboard/)** 
+
+  最初记事本上只有一个字符 'A' 。你每次可以对这个记事本进行两种操作：
+
+  + Copy All（复制全部）：复制这个记事本中的所有字符（不允许仅复制部分字符）。
+
+  + Paste（粘贴）：粘贴 上一次 复制的字符。
+
+    给你一个数字 n ，你需要使用最少的操作次数，在记事本上输出 恰好 n 个 'A' 。返回能够打印出 n 个 'A' 的最少操作次数
+
+  ```
+  输入：3
+  输出：3
+  解释：
+  最初, 只有一个字符 'A'。
+  第 1 步, 使用 Copy All 操作。
+  第 2 步, 使用 Paste 操作来获得 'AA'。
+  第 3 步, 使用 Paste 操作来获得 'AAA'。
+  
+  输入：n = 1
+  输出：0
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int minSteps(int n) {
+          vector<int> dp(n + 1);
+          int h = sqrt(n);
+          // 边界值 dp[0] = dp[1] = 0;所以更新从2开始
+          for (int i = 2; i <= n; ++i) {
+              // 每个最多是i
+              dp[i] = i;
+              // 除非有因子存在 没有必要从1开始，因为dp[i] = i 已经考虑了dp[9] = dp[1] + dp[9]
+              for (int j = 2; j <= h; ++j) {
+                  if (i % j == 0) {
+                      // 为什么这里只有一个就行了，因为分开的dp还可以继续分 
+                      // 例如 dp[12] = dp[2] + dp[6] = dp[2] + dp[2] + dp[3] = dp[3] + dp[4]
+                      // 这里又体现了动态规划的本质，递归
+                      dp[i] = dp[j] + dp[i / j];
+                      
+                      break;
+                  }
+              }
+          }
+          return dp[n];
+      }
+  };
+  ```
+
++ **10 [正则表达式匹配](https://leetcode-cn.com/problems/regular-expression-matching/)**
+
+  给你一个字符串 s 和一个字符规律 p，请你来实现一个支持 '.' 和 '*' 的正则表达式匹配。
+
+  + '.' 匹配任意单个字符
+
+  + '*' 匹配零个或多个前面的那一个元素
+    所谓匹配，是要涵盖 整个 字符串 s的，而不是部分字符串。
+
+  ```
+  输入：s = "aa" p = "a"
+  输出：false
+  解释："a" 无法匹配 "aa" 整个字符串。
+  
+  输入：s = "aab" p = "c*a*b"
+  输出：true
+  解释：因为 '*' 表示零个或多个，这里 'c' 为 0 个, 'a' 被重复一次。因此可以匹配字符串 "aab"。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool isMatch(string s, string p) {
+          int n = s.size(), m = p.size();
+          vector<vector<bool>> dp(n + 1, vector<bool>(m + 1, false));
+          // 处理好边界值dp[i][0] = false  dp[0][0] = true dp[0][i] = false
+          dp[0][0] = true;
+          // 边界值没处理好 a*b*c*d*e*.... 少了下面这个
+          for (int i = 1; i <= m; ++i) {
+              if (p[i - 1] == '*') {
+                  dp[0][i] = dp[0][i - 2];
+              }
+          }
+          // 动态规划
+          for (int i = 1; i <= n; ++i) {
+              for (int j = 1; j <= m; ++j) {
+                  // 先考虑简单的情况
+                  // . 的情况
+                  if (p[j - 1] == '.') {
+                      dp[i][j] = dp[i - 1][j - 1];
+                  // 字符的情况
+                  } else if (p[j - 1] != '*') {  
+                      dp[i][j] = dp[i - 1][j - 1] && s[i - 1] == p[j - 1];
+                  // * 的情况 这个情况比较复杂
+                  // *1: ...b  ...a* 
+                  } else if (p[j - 2] != s[i - 1] && p[j - 2] != '.' ) {
+                      dp[i][j] = dp[i][j - 2];
+                  // *2: ...a  ...a*/....*
+                  // dp[i][j - 1] * 匹配前面一个元素
+                  // dp[i - 1][j] * 匹配前面n个元素 这个匹配体现在递推上面
+                  // dp[i][j - 2] * 匹配0个前面的元素
+                  } else {
+                      dp[i][j] = dp[i][j - 1] || dp[i - 1][j] || dp[i][j - 2];
+                  }
+              }
+          }
+          return dp[n][m];
+      }
+  };
+  
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：7 MB, 在所有 C++ 提交中击败了44.91%的用户
+  
+  // 总结
+  // 首先边界的处理一定要考虑仔细
+  // 分类讨论从简单到复杂
+  // 时刻理解好递推的思想 对于二维状态矩阵，一般不会涉及很深的递推 
+  // [i][j], [i - 1][j], [i][j - 1], [i - 1][j - 1] 这是基础需要考虑的 本题的j - 2 是题目特色
+  ```
+  
+
+## 7.8 股票交易
+
+股票交易类问题通常可以用动态规划来解决。对于稍微复杂一些的股票交易类问题，比如需要冷却时间或者交易费用，则可以用通过动态规划实现的状态机来解决。
+
+如何理解这里的状态机？
+
++  **121 [买卖股票的最佳时机](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)**
+
+  给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+
+  你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+  返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+
+  ```
+  输入：[7,1,5,3,6,4]
+  输出：5
+  解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+       注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+  ```
+
+  ```c++
+  // 状态 两个状态 第i天之前的最小价格 第i天的将股票卖出所能收获的最大收益
+  // 动作 从第i天转到第i+1天
+  // 指标函数 
+  class Solution {
+  public:
+      int maxProfit(vector<int>& prices) {
+          int sell = 0, buy = INT_MAX;
+          for (int i = 0; i < prices.size(); i++) {
+              buy = min(buy, prices[i]);
+              sell = max(sell, prices[i] - buy);
+          }
+          return sell;
       }
   };
   ```
 
   
+
+
+
+
+
+
+
+
+
+
+
