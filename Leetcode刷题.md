@@ -3576,13 +3576,201 @@ public:
   };
   ```
 
+
++ **188 [买卖股票的最佳时机 IV](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/)** (困难)
+
+  给定一个整数数组 prices ，它的第 i 个元素 prices[i] 是一支给定的股票在第 i 天的价格。
+
+  设计一个算法来计算你所能获取的最大利润。你最多可以完成 k 笔交易。
+
+  注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+  ```
+  输入：k = 2, prices = [2,4,1]
+  输出：2
+  解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
+  
+  来源：力扣（LeetCode）
+  链接：https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv
+  著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+  ```
+  
+  ```c++
+  class Solution {
+  public:
+      int maxProfit(int k, vector<int>& prices) {
+          // 尽可能完成k笔交易 当到达k笔交易的时候
+          // 新的交易替换掉当前交易的最小值，然后更新最小的交易
+          // 状态  最大利润  最小交易值
+          // 上面这个想法是错误的 
+          // 示例 k = 2, prices = [1,2,4,2,5,7,2,4,9,0]
+          /*
+          prices.push_back(0);
+          vector<int> sumProfit;
+          int profit = 0;
+          for (int i = 0; i < prices.size() - 1; ++i) {
+              auto p = min_element(sumProfit.begin(), sumProfit.end());
+              if (prices[i] <= prices[i + 1]) {
+                  profit += prices[i + 1] - prices[i];
+              } else if (profit > 0) {
+                  if (sumProfit.size() < k) sumProfit.push_back(profit);
+                  else {
+                      *p = profit;
+                  }
+                  profit = 0;
+              }
+          }
+          return accumulate(sumProfit.begin(), sumProfit.end(), 0);
+          */
+          // 转而dp思想
+          // 分情况讨论下
+          // 1. 如果是K大于总天数 那么只要有机会 就买入卖出 这也就意味着 将所有的爬坡都计算出来
+          int days = prices.size();
+          if (days < 2) return 0;
+          if (k >= days) return maxProfitUnlimited(prices);
+          // 2. 其他情况
+          // 构建两个状态矩阵 buy_dp[i][j] 表示第i天进行了j次买入交易时的最大收益
+          // sell_dp[i][j]表示第i天进行了j次卖出交易时的最大收益
+          // 边界处理
+          // buy[0][j] = 0 这个是有可能为负的，因此在初始化时使用 INT_MIN 
+          // sell[0][j] = sell[1][j] = 0 这个不可能为负 所以初始化可以直接使用0
+          // ans是什么 sell[days][k]
+          vector<int> buy(k + 1, INT_MIN), sell(k + 1, 0);
+          for (int i = 0; i < days; ++i) {
+              // 涉及的边界buy[0] sell[0] 都已经处理好 所以这里直接从1开始更新
+              for (int j = 1; j <= k; ++j) {
+                  // 对于第i天 有可能当天进行了第j次买入交易，那么这个时候的收益就是
+                  // 上一次卖出的最大收益 - 这次买入所花费的费用， 如果当天没有进行第j次买入交易
+                  // 那么一定是在前面几天进行了买入交易，这个时候就比较这两种情况那种的收益大
+                  // 对于当天i进行了买入交易 那么上一次的卖出交易的最大收益一定是在当天之前，
+                  // 也就是 i - 1 sell[i - 1][j - 1]
+                  // buy[i][j] = max(buy[i - 1][j], sell[i - 1][j - 1] - prices[i]);
+                  buy[j] = max(buy[j], sell[j - 1] - prices[i]);
+                  // 同理对于卖出交易，也分为在当天卖出和在之前卖出
+                  // 在之前卖出sell[i - 1][j]
+                  // 在当天卖出，说明第j次交易的买入一定是在第i天之前，因为买入一定要在卖出之前
+                  // 所以更新公式为 buy[i - 1][j](第j次买入的最大收益) + prices[i](卖出收入)
+                  sell[j] = max(sell[j], buy[j] + prices[i]);
+                  // 从上面的更新也可以看出，我们可以对数组进行压缩，降低空间复杂度        
+          }
+          return sell[k];
+      }
+      // 辅函数 比较简单这里就不做叙述了
+      int maxProfitUnlimited(vector<int> prices) {
+          int maxProfit = 0;
+          for (int i = 1; i < prices.size(); ++i) {
+              if (prices[i] > prices[i-1]) {
+              	maxProfit += prices[i] - prices[i-1];
+              }
+          }
+          return maxProfit;
+      }
+  };
+      
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了92.75%的用户
+  // 内存消耗：10.5 MB, 在所有 C++ 提交中击败了88.29%的用户
+  ```
   
 
++ **309 [ 最佳买卖股票时机含冷冻期](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)** **(中等)**
 
+  给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。
 
+  设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
 
+  你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+  卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
 
+  ```
+  输入: [1,2,3,0,2]
+  输出: 3 
+  解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
+  ```
 
+  ```c++
+  class Solution {
+  public:
+      int maxProfit(vector<int>& prices) {
+  		int days = prices.size();
+          if (days < 2) return 0;
+          
+          // buy[i] 第i天做出买操作的最大利润，s1[i]，sell转向buy的中间状态，
+          // sell[i] 第i天做出卖操作的最大利润，s2[i]，buy转向sell的中间状态，
+          // s1和s2是否起到冷却作用取决于 如何利用s1和s2更新sell buy
+          vector<int> buy(days), s1(days), sell(days), s2(days);
+          // 处理边界值
+          buy[0] = -prices[0];
+          s2[0] = -prices[0];
+          sell[0] = 0;
+          s1[0] = 0;
+          // 边界值已经处理完毕，所以这里从1开始
+          for (int i = 1; i < days; ++i) {
+              // 这样更新buy，就意味着买入不能紧跟着卖出
+              buy[i] = s1[i - 1] - prices[i]; // = max(sell[i - 2], s1[i - 2]) - prices[i]
+              s2[i] = max(buy[i - 1], s2[i - 1]);
+              // 这样更新sell就意味着卖出可以紧跟着买入
+              sell[i] = max(buy[i - 1], s2[i - 1]) + prices[i];
+              s1[i] = max(sell[i - 1], s1[i - 1]);
+          }
+          return max(sell[days - 1], s1[days - 1]);
+      }
+  };
+  ```
+
+## 7.9 练习
+
++ **213 [打家劫舍 II](https://leetcode-cn.com/problems/house-robber-ii/) (中等)**
+
+  你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 围成一圈 ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警 。
+
+  给定一个代表每个房屋存放金额的非负整数数组，计算你 在不触动警报装置的情况下 ，今晚能够偷窃到的最高金额。
+
+  ```
+  输入：nums = [2,3,2]
+  输出：3
+  解释：你不能先偷窃 1 号房屋（金额 = 2），然后偷窃 3 号房屋（金额 = 2）, 因为他们是相邻的。
+  
+  输入：nums = [1,2,3,1]
+  输出：4
+  解释：你可以先偷窃 1 号房屋（金额 = 1），然后偷窃 3 号房屋（金额 = 3）。
+       偷窃到的最高金额 = 1 + 3 = 4 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int rob(vector<int>& nums) {
+          int n = nums.size();
+          int maxMoney = 0;
+          // 动态规划
+          vector<int> dp1(n + 1, 0);
+          // 如果偷第一个
+          dp1[1] = nums[0];
+          for (int i = 2; i <= n; ++i) {
+              if (i != n) {
+                  dp1[i] = max(dp1[i - 1], dp1[i - 2] + nums[i - 1]);
+              } else {
+                  dp1[i] = dp1[i - 1];
+              }
+          }
+          // 如果不偷第一个
+          vector<int> dp2(n + 1, 0);
+          for (int i = 2; i <= n; ++i) {
+              dp2[i] = max(dp2[i - 1], dp2[i - 2] + nums[i - 1]);
+          }
+          return max(dp1[n], dp2[n]);
+      }
+  };
+  
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：7.8 MB, 在所有 C++ 提交中击败了10.32%的用户
+  // 如何减少内存？
+  // 因为dp[n] 只和 dp[n - 1] dp[n - 2] 有关，并且最后只需要dp[n]，
+  // 类似斐波那契数列，可以利用双指针
+  
+  ```
+
+  
 
 
 
