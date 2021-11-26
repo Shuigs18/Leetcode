@@ -3589,10 +3589,6 @@ public:
   输入：k = 2, prices = [2,4,1]
   输出：2
   解释：在第 1 天 (股票价格 = 2) 的时候买入，在第 2 天 (股票价格 = 4) 的时候卖出，这笔交易所能获得利润 = 4-2 = 2 。
-  
-  来源：力扣（LeetCode）
-  链接：https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv
-  著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
   ```
   
   ```c++
@@ -3632,7 +3628,7 @@ public:
           // 构建两个状态矩阵 buy_dp[i][j] 表示第i天进行了j次买入交易时的最大收益
           // sell_dp[i][j]表示第i天进行了j次卖出交易时的最大收益
           // 边界处理
-          // buy[0][j] = 0 这个是有可能为负的，因此在初始化时使用 INT_MIN 
+          // buy[0][j] = 0 这个是有可能为负的 第一天买没卖，因此在初始化时使用 INT_MIN 
           // sell[0][j] = sell[1][j] = 0 这个不可能为负 所以初始化可以直接使用0
           // ans是什么 sell[days][k]
           vector<int> buy(k + 1, INT_MIN), sell(k + 1, 0);
@@ -3641,7 +3637,7 @@ public:
               for (int j = 1; j <= k; ++j) {
                   // 对于第i天 有可能当天进行了第j次买入交易，那么这个时候的收益就是
                   // 上一次卖出的最大收益 - 这次买入所花费的费用， 如果当天没有进行第j次买入交易
-                  // 那么一定是在前面几天进行了买入交易，这个时候就比较这两种情况那种的收益大
+                  // 那么一定是在前面几天进行了买入交易，这个时候就比较这两种情况那种收益大
                   // 对于当天i进行了买入交易 那么上一次的卖出交易的最大收益一定是在当天之前，
                   // 也就是 i - 1 sell[i - 1][j - 1]
                   // buy[i][j] = max(buy[i - 1][j], sell[i - 1][j - 1] - prices[i]);
@@ -3671,7 +3667,6 @@ public:
   // 内存消耗：10.5 MB, 在所有 C++ 提交中击败了88.29%的用户
   ```
   
-
 + **309 [ 最佳买卖股票时机含冷冻期](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)** **(中等)**
 
   给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。
@@ -3695,7 +3690,8 @@ public:
           if (days < 2) return 0;
           
           // buy[i] 第i天做出买操作的最大利润，s1[i]，sell转向buy的中间状态，
-          // sell[i] 第i天做出卖操作的最大利润，s2[i]，buy转向sell的中间状态，
+          // s1[i] = max(sell[i - 1], s1[i - 1]); 使得buy转向sell至少隔了一天
+          // sell[i] 第i天做出卖操作的最大利润，s2[i]，buy转向sell的中间状态
           // s1和s2是否起到冷却作用取决于 如何利用s1和s2更新sell buy
           vector<int> buy(days), s1(days), sell(days), s2(days);
           // 处理边界值
@@ -3707,6 +3703,7 @@ public:
           for (int i = 1; i < days; ++i) {
               // 这样更新buy，就意味着买入不能紧跟着卖出
               buy[i] = s1[i - 1] - prices[i]; // = max(sell[i - 2], s1[i - 2]) - prices[i]
+              // max(sell[i - 2], max(sell[i - 3], s1[i - 3])) - prices[i]
               s2[i] = max(buy[i - 1], s2[i - 1]);
               // 这样更新sell就意味着卖出可以紧跟着买入
               sell[i] = max(buy[i - 1], s2[i - 1]) + prices[i];
@@ -3768,11 +3765,195 @@ public:
   // 因为dp[n] 只和 dp[n - 1] dp[n - 2] 有关，并且最后只需要dp[n]，
   // 类似斐波那契数列，可以利用双指针
   
+  class Solution {
+  public:
+  
+      int rob(vector<int>& nums) {
+          int n = nums.size();
+          if (n <= 1) return nums[0];
+          return max(myRob(nums, 0, n - 2), myRob(nums, 1, n - 1));
+      }
+      // 辅函数
+      int myRob(vector<int>& nums, int start, int end) {
+          // 边界值要处理好 
+          int pre = 0, cur = 0;
+          for (int i = start; i <= end; ++i) {
+              int tmp = cur;
+              cur = max(cur, pre + nums[i]);
+              pre = tmp;
+          }
+          return cur;
+      }
+  };
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：7.5 MB, 在所有 C++ 提交中击败了86.01%的用户
   ```
 
++ **53 [最大子序和](https://leetcode-cn.com/problems/maximum-subarray/) (简单)**
+
+  给定一个整数数组 `nums` ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+  ```
+  输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+  输出：6
+  解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+  ```
+
+  ```c++
+  class Solution {
+  public:
   
+      int maxSubArray(vector<int>& nums) {
+          // 一维动态规划
+          int n = nums.size();
+          if (n <= 1) return nums[0];
+          vector<int> dp(n + 1, 0);
+          // 处理边界
+          dp[0] = INT_MIN;
+          for (int i = 1; i <= n; ++i) {
+              if (dp[i - 1] < 0) {
+                  dp[i] = nums[i - 1];
+              } else {
+                  dp[i] = dp[i - 1] + nums[i - 1];
+              }
+          }
+          return *max_element(dp.begin(), dp.end());
+      }
+  };
+  
+  // 执行用时：92 ms, 在所有 C++ 提交中击败了34.89%的用户
+  // 内存消耗：68.8 MB, 在所有 C++ 提交中击败了5.05%的用户
+  
+  // 优化一：
+  class Solution {
+  public:
+  
+      int maxSubArray(vector<int>& nums) {
+          // 一维动态规划
+          int n = nums.size();
+          if (n <= 1) return nums[0];
+          vector<int> dp(n + 1, 0);
+          // 处理边界
+          dp[0] = INT_MIN;
+          int maxSum = INT_MIN;
+          for (int i = 1; i <= n; ++i) {
+              if (dp[i - 1] < 0) {
+                  dp[i] = nums[i - 1];
+              } else {
+                  dp[i] = dp[i - 1] + nums[i - 1];
+              }
+              maxSum = max(maxSum, dp[i]);
+          }
+          return maxSum;
+      }
+  };
+  // 执行用时：84 ms, 在所有 C++ 提交中击败了48.57%的用户
+  // 内存消耗：68.8 MB, 在所有 C++ 提交中击败了5.05%的用户
+  
+  //优化二：一维数组转化为常量
+  class Solution {
+  public:
+      int maxSubArray(vector<int>& nums) {
+          // 一维动态规划
+          int n = nums.size();
+          if (n <= 1) return nums[0];
+          int cur = INT_MIN;
+          // 处理边界
+          int maxSum = INT_MIN;
+          for (int i = 1; i <= n; ++i) {
+              if (cur < 0) {
+                  cur = nums[i - 1];
+              } else {
+                  cur = cur + nums[i - 1];
+              }
+              maxSum = max(maxSum, cur);
+          }
+          return maxSum;
+      }
+  };
+  // 执行用时：84 ms, 在所有 C++ 提交中击败了48.57%的用户
+  // 内存消耗：66.2 MB, 在所有 C++ 提交中击败了22.56%的用户
+  
+  class Solution {
+  public:
+      int maxSubArray(vector<int>& nums) {
+          // 一维动态规划
+          int n = nums.size();
+          if (n <= 1) return nums[0];
+          int cur = -1;
+          // 处理边界
+          int maxSum = -1e4 - 1;
+          for (int i = 1; i <= n; ++i) {
+              if (cur < 0) {
+                  cur = nums[i - 1];
+              } else {
+                  cur = cur + nums[i - 1];
+              }
+              maxSum = max(maxSum, cur);
+          }
+          return maxSum;
+      }
+  };
+  // 执行用时：76 ms, 在所有 C++ 提交中击败了54.74%的用户
+  // 内存消耗：66.1 MB, 在所有 C++ 提交中击败了42.88%的用户
+  ```
+
++ **343 [整数拆分](https://leetcode-cn.com/problems/integer-break/) (中等)**
+
+  给定一个正整数 *n*，将其拆分为**至少**两个正整数的和，并使这些整数的乘积最大化。 返回你可以获得的最大乘积。
+
+  ```
+  输入: 2
+  输出: 1
+  解释: 2 = 1 + 1, 1 × 1 = 1。
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      int integerBreak(int n) {
+          // n >= 2 n <= 58
+          vector<int> dp(n + 1, 0); 
+          // 处理边界 dp[0] = 0; dp[1] = 0;
+          for (int i = 2; i <= n; ++i) {
+              int curMax = 0;
+              // i 分成 k, i - k；i - k分情况讨论 
+              // 要么继续拆k * dp[i - k]，要么不拆k * (i - k)
+              for (int k = 1; k < i; ++k) {
+                  curMax = max(curMax, max(k * (i - k), k * dp[i - k]));
+              }
+              dp[i] = curMax;
+          }
+          return dp[n];
+      }
+  };
+  
+  // 优化1
+  //If an optimal product contains a factor f >= 4, then you can replace it with factors 2 and f-2 without losing optimality, as 2*(f-2) = 2f-4 >= f. So you never need a factor greater than or equal to 4, meaning you only need factors 1, 2 and 3 (and 1 is of course wasteful and you'd only use it for n=2 and n=3, where it's needed).
+  //For the rest I agree, 3*3 is simply better than 2*2*2, so you'd never use 2 more than twice.
+  
+  class Solution {
+  public:
+      int integerBreak(int n) {
+          // n >= 2 n <= 58
+          vector<int> dp(n + 1, 0); 
+          // 处理边界 dp[0] = 0; dp[1] = 0;
+          dp[2] = 1;
+          for (int i = 2; i <= n; ++i) {
+              dp[i] = max(max(2*(i - 2), 2*dp[i - 2]), max(3*(i - 3), 3*dp[i - 3]));
+          }
+          return dp[n];
+      }
+  };
+  
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：6.1 MB, 在所有 C++ 提交中击败了57.34%的用户
+  ```
 
 
++ 583 [两个字符串的删除操作](https://leetcode-cn.com/problems/delete-operation-for-two-strings/)
+
+  
 
 
 
