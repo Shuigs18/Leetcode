@@ -703,6 +703,424 @@ int xGCD(int a, int b, int &x, int &y) {
    */
   ```
 
+
+
+
+# 11. C++ 数据结构
+
+## 11.2 数组
+
++ **448 [找到所有数组中消失的数字](https://leetcode-cn.com/problems/find-all-numbers-disappeared-in-an-array/) (Easy)**
+
+  给你一个含 n 个整数的数组 nums ，其中 nums[i] 在区间 [1, n] 内。请你找出所有在 [1, n] 范围内但没有出现在 nums 中的数字，并以数组的形式返回结果。
+
+  ```
+  输入：nums = [4,3,2,7,8,2,3,1]
+  输出：[5,6]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<int> findDisappearedNumbers(vector<int>& nums) {
+          vector<int> ans;
+          // 原地修改数组
+          for (int i = 0; i < nums.size(); ++i) {
+              int pos = abs(nums[i]) - 1;
+              if (nums[pos] > 0) nums[pos] = -nums[pos];
+          }
+          for (int i = 0; i < nums.size(); ++i) {
+              if (nums[i] > 0) ans.push_back(i + 1);
+          }
+          return ans;
+      }
+  };
+  // 执行用时：40 ms, 在所有 C++ 提交中击败了89.09%的用户
+  // 内存消耗：32.9 MB, 在所有 C++ 提交中击败了58.95%的用户
+  ```
+
++ **48 [旋转图像](https://leetcode-cn.com/problems/rotate-image/) (Medium)**
+
+  给定一个 n × n 的二维矩阵 matrix 表示一个图像。请你将图像顺时针旋转 90 度。
+
+  你必须在 原地 旋转图像，这意味着你需要直接修改输入的二维矩阵。请不要 使用另一个矩阵来旋转图像。
+
+  ```
+  输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+  输出：[[7,4,1],[8,5,2],[9,6,3]]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      void rotate(vector<vector<int>>& matrix) {
+      	int n = matrix.size();
+          for (int i = 0; i < n / 2; ++i) {
+              for (int j = 0; j < (n + 1) / 2; ++j) {
+                  int temp = matrix[i][j];
+                  matrix[i][j] = matrix[n - j - 1][i];
+                  matrix[n - j - 1][i] = matrix[n - i - 1][n - j - 1];
+                  matrix[n - i - 1][n - j - 1] = matrix[j][n - i - 1];
+                  matrix[j][n - i - 1] = temp;
+              }
+          }
+      }
+  };
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：7 MB, 在所有 C++ 提交中击败了13.06%的用户
+  ```
+
+  **总结** 
+
+  对于寻找矩阵中间位置的下标， N为数组size
+
+  +  $N / 2$  **中间位置** 
+
+    如果N为奇数，N / 2 为中间位置的下标
+
+    如果N为偶数，N / 2 为右半部分的第一个位置的下标
+
+  + $(N + 1) / 2$   **右边**
+
+    如果N为奇数，(N + 1) / 2 为右半部分的第一个位置的下标
+
+    如果N为偶数，(N + 1) / 2 为右半部分的第一个位置的下标
+
+  +  $(N - 1) / 2$   **这个可以用作找中间位置**
+
+    如果N为奇数，(N - 1) / 2 为中间位置的下标
+
+    如果N为偶数，(N - 1) / 2 为左半部分的最后一个位置的下标
+
+  
+
++ **240 [搜索二维矩阵 II](https://leetcode-cn.com/problems/search-a-2d-matrix-ii/) (Medium)**
+
+  编写一个高效的算法来搜索 m x n 矩阵 matrix 中的一个目标值 target 。该矩阵具有以下特性：
+
+  每行的元素从左到右升序排列。
+  每列的元素从上到下升序排列。
+
+  ```
+  输入：matrix = [[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]], target = 5
+  输出：true
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool searchMatrix(vector<vector<int>>& matrix, int target) {
+          int n = matrix.size();
+          if (n == 0) return false;
+          int m = matrix[0].size();
+          int i = 0; j = m - 1;
+          while (i < n && j >= 0) {
+              if (matrix[i][j] == target) return true;
+              else if (matrix[i][j] > target) --j;
+              else ++i;
+          }
+          return false;
+      }
+  };
+  // 执行用时：92 ms, 在所有 C++ 提交中击败了79.77%的用户
+  // 内存消耗：14.6 MB, 在所有 C++ 提交中击败了20.34%的用户
+  ```
+  
+
+## 11.3 栈和队列
+
++ **155 [最小栈](https://leetcode-cn.com/problems/min-stack/) (Easy)**
+
+  设计一个支持 `push` ，`pop` ，`top` 操作，并能在常数时间内检索到最小元素的栈。
+
+  - `push(x)` —— 将元素 x 推入栈中。
+  - `pop()` —— 删除栈顶的元素。
+  - `top()` —— 获取栈顶元素。
+  - `getMin()` —— 检索栈中的最小元素
+
+  ```
+  输入：
+  ["MinStack","push","push","push","getMin","pop","top","getMin"]
+  [[],[-2],[0],[-3],[],[],[],[]]
+  
+  输出：
+  [null,null,null,null,-3,null,0,-2]
+  
+  解释：
+  MinStack minStack = new MinStack();
+  minStack.push(-2);
+  minStack.push(0);
+  minStack.push(-3);
+  minStack.getMin();   --> 返回 -3.
+  minStack.pop();
+  minStack.top();      --> 返回 0.
+  minStack.getMin();   --> 返回 -2.
+  ```
+
+  ```c++
+  class MinStack {
+      // 私有部分
+      stack<int> s, min_s;
+  public:
+      MinStack() { }
+      
+      void push(int val) {
+          s.push(val);
+          if (min_s.empty() || val <= min_s.top()) {
+              min_s.push(val);
+          }
+      }
+      
+      void pop() {
+          if (!min_s.empty() && s.top() == min_s.top()) {
+              min_s.pop();
+          }
+          s.pop();
+      }
+      
+      int top() {
+          return s.top();
+      }
+      
+      int getMin() {
+          return min_s.top();
+      }
+  };
+  
+  /**
+   * Your MinStack object will be instantiated and called as such:
+   * MinStack* obj = new MinStack();
+   * obj->push(val);
+   * obj->pop();
+   * int param_3 = obj->top();
+   * int param_4 = obj->getMin();
+   */
+  
+  // 执行用时：24 ms, 在所有 C++ 提交中击败了50.99%的用户
+  // 内存消耗：16 MB, 在所有 C++ 提交中击败了42.53%的用户
+  ```
+
++ **20 [有效的括号](https://leetcode-cn.com/problems/valid-parentheses/) (Easy)**
+
+  给定一个只包括 `'('`，`')'`，`'{'`，`'}'`，`'['`，`']'` 的字符串 `s` ，判断字符串是否有效。
+
+  有效字符串需满足：
+
+  1. 左括号必须用相同类型的右括号闭合。
+  2. 左括号必须以正确的顺序闭合。
+
+  ```
+  输入：s = "()"
+  输出：true
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      bool isValid(string s) {
+          int n = s.size();
+          if (n % 2 == 1) return false;
+  
+          unordered_map<int, int> pairs = {
+              {')', '('},
+              {']', '['},
+              {'}', '{'}
+          };
+  
+          stack<char> stk;
+          for (auto &ch: s) {
+              if (pairs.count(ch)) {
+                  if (stk.empty() || stk.top() != pairs[ch]) {
+                      return false;
+                  } else {
+                      stk.pop();
+                  }
+              } else {
+                  stk.push(ch);
+              }
+          }
+          return stk.empty();
+      }
+  };
+  // 执行用时：0 ms, 在所有 C++ 提交中击败了100.00%的用户
+  // 内存消耗：6.2 MB, 在所有 C++ 提交中击败了42.85%的用户
+  ```
+
+  
+
+## 11.4 单调栈
+
++ **739 [每日温度](https://leetcode-cn.com/problems/daily-temperatures/)(Medium)**
+
+  请根据每日 `气温` 列表 `temperatures` ，请计算在每一天需要等几天才会有更高的温度。如果气温在这之后都不会升高，请在该位置用 `0` 来代替.
+
+  ```
+  输入: temperatures = [73,74,75,71,69,72,76,73]
+  输出: [1,1,4,2,1,1,0,0]
+  ```
+
+  ```c++
+  class Solution {
+  public:
+      vector<int> dailyTemperatures(vector<int>& temperatures) {
+  		int n = temperatures.size();
+  		vector<int> ans(n);
+  		stack<int> highDaily;
+  		for (int i = 0; i < n; ++i) {
+              while (!highDaily.empty()) {
+                  int day = highDaily.top();
+                  if (tempreatures[i] <= temperatures[day]) break;
+                  highDaily.pop();
+                  ans[day] = i - day;
+              }
+              highDaily.push(i);
+  		}
+          return ans;
+      }
+  };
+  
+  // 执行用时：128 ms, 在所有 C++ 提交中击败了85.85%的用户
+  // 内存消耗：86.9 MB, 在所有 C++ 提交中击败了17.94%的用户
+  ```
+
+## 11.5 优先队列
+
+
+
+# 12. 字符串
+
+## 12.1 字符串比较
+
+# 13. 链表
+
+## 13. 1 链表的基本操作
+
++ **206 [反转链表](https://leetcode-cn.com/problems/reverse-linked-list/) (Easy)**
+
+  给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。
+
+  ```
+  输入：head = [1,2,3,4,5]
+  输出：[5,4,3,2,1]
+  ```
+
+  ```c++
+  /**
+   * Definition for singly-linked list.
+   * struct ListNode {
+   *     int val;
+   *     ListNode *next;
+   *     ListNode() : val(0), next(nullptr) {}
+   *     ListNode(int x) : val(x), next(nullptr) {}
+   *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+   * };
+   */
+  class Solution {
+  public:
+      ListNode* reverseList(ListNode* head) {
+          ListNode *prev = nullptr, *next;
+          while (head) {
+              next = head->next;
+              head->next = prev;
+              prev = head;
+              head = next;
+          }
+          return prev;
+      }
+  };
+  // 执行用时：4 ms, 在所有 C++ 提交中击败了88.94%的用户
+  // 内存消耗：8 MB, 在所有 C++ 提交中击败了90.32%的用户
+  ```
+
+## 13.2 链表的其他操作
+
++ **160 [相交链表](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/) (Easy)**
+
+  给你两个单链表的头节点 `headA` 和 `headB` ，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 `null` 。
+
+  图示两个链表在节点 `c1` 开始相交**：**
+
+  <img src="/Users/shuiguangshan/Pictures/Typora imgs/160_statement.png" alt="img" style="zoom:50%;" />
+
+  ```c++
+  /**
+   * Definition for singly-linked list.
+   * struct ListNode {
+   *     int val;
+   *     ListNode *next;
+   *     ListNode(int x) : val(x), next(NULL) {}
+   * };
+   */
+  class Solution {
+  public:
+      ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+          ListNode *l1 = headA, *l2 = headB;
+          while (l1 != l2) {
+              l1 = (l1)? l1->next: headB;
+              l2 = (l2)? l2->next: headA;
+          }
+          return l1;
+      }
+  };
+  ```
+
++ **234 [回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/) (Easy)**
+
+  给你一个单链表的头节点 `head` ，请你判断该链表是否为回文链表。如果是，返回 `true` ；否则，返回 `false` 。
+
+  ```
+  输入：head = [1,2,2,1]
+  输出：true
+  ```
+
+  ```c++
+  /**
+   * Definition for singly-linked list.
+   * struct ListNode {
+   *     int val;
+   *     ListNode *next;
+   *     ListNode() : val(0), next(nullptr) {}
+   *     ListNode(int x) : val(x), next(nullptr) {}
+   *     ListNode(int x, ListNode *next) : val(x), next(next) {}
+   * };
+   */
+  class Solution {
+  public:
+      bool isPalindrome(ListNode* head) {
+          if (!head || !head->next) {
+              return true;
+          }
+          ListNode *slow = head, *fast = head;
+          while (fast->next && fast->next->next) {
+              slow = slow->next;
+              fast = fast->next->next;
+          }
+          slow->next = reverseList(slow->next);
+          slow = slow->next;
+  
+          while(slow) {
+              if (head->val != slow->val) return false;
+              head = head->next;
+              slow = slow->next;
+          }
+          return true;
+      }
+  
+      ListNode* reverseList(ListNode* head) {
+          ListNode *prev = nullptr, *next;
+          while (head) {
+              next = head->next;
+              head->next = prev;
+              prev = head;
+              head = next;
+          }
+          return prev;
+      }
+  };
+  // 执行用时：184 ms, 在所有 C++ 提交中击败了70.25%的用户
+  // 内存消耗：115.2 MB, 在所有 C++ 提交中击败了57.49%的用户
+  ```
+
   
 
 # 14. 树
